@@ -1,7 +1,6 @@
 name = "ember"
 main = "src/index.js"
-compatibility_date = "2026-09-05"
-compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2025-09-06"
 account_id = "86157a94d182660d93ba076e084b3884"
 workers_dev = false
 

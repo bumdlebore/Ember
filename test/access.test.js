@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { verifyAccessJwt, __resetJwksCache } from "../src/access.js";
+import { verifyAccessJwt, __resetJwksCache, JwksUnavailable } from "../src/access.js";
 
 const TEAM = "example.cloudflareaccess.com";
 const AUD = "aud-tag-123";
@@ -113,5 +113,48 @@ describe("verifyAccessJwt", () => {
     await expect(
       verifyAccessJwt("not.a.jwt", { teamDomain: TEAM, aud: AUD })
     ).rejects.toThrow();
+  });
+
+  it("rejects with JwksUnavailable when the JWKS fetch throws (network error)", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async () => {
+      throw new Error("network down");
+    });
+    const token = await mintJwt();
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toBeInstanceOf(JwksUnavailable);
+  });
+
+  it("rejects with JwksUnavailable when the JWKS endpoint returns a non-OK status", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async () =>
+      new Response("server error", { status: 500 })
+    );
+    const token = await mintJwt();
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toBeInstanceOf(JwksUnavailable);
+  });
+
+  it("rejects an expired token with a plain error, not JwksUnavailable, when the JWKS endpoint is healthy", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async (url) => {
+      if (String(url).includes("/cdn-cgi/access/certs")) {
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("unexpected fetch: " + url);
+    });
+    const token = await mintJwt({ exp: Math.floor(Date.now() / 1000) - 10 });
+    let caught;
+    try {
+      await verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD });
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(Error);
+    expect(caught instanceof JwksUnavailable).toBe(false);
   });
 });
