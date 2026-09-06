@@ -1,1 +1,928 @@
-<!doctype html><title>Ember</title><p>placeholder</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1c1611">
+<title>Ember — Cigar Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1c1611; --bg2:#241c15; --card:#2b2118; --card2:#33271c;
+    --line:#42342552; --line2:#4a3a27;
+    --ink:#f1e7d6; --ink2:#cdb79f; --mute:#9c876c; --faint:#74604a;
+    --ember:#e07a37; --ember2:#f0a85a; --ash:#caa985;
+    --leaf:#9aa86a; --bad:#c2613f; --good:#a9b46f;
+    --rad:14px; --rad-s:9px;
+    --shadow:0 1px 0 #00000040, 0 8px 30px -14px #00000080;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  body{background:
+    radial-gradient(120% 80% at 80% -10%, #2a1d12 0%, transparent 55%),
+    radial-gradient(90% 60% at -10% 0%, #261b13 0%, transparent 50%),
+    var(--bg);min-height:100vh}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;letter-spacing:-.01em;margin:0}
+  a{color:inherit}
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px 120px}
+
+  /* Header */
+  header{padding:26px 16px 14px;max-width:880px;margin:0 auto}
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .mark{width:13px;height:13px;border-radius:50%;align-self:center;
+    background:radial-gradient(circle at 35% 30%, var(--ember2), var(--ember) 55%, #7a2f10 100%);
+    box-shadow:0 0 12px 1px #e07a3766, 0 0 26px 4px #e07a3722;flex:none}
+  .brand h1{font-size:30px;font-weight:600}
+  .brand .sub{font-size:13px;color:var(--mute);
+    font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
+  .rightgrp{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .syncpill{background:var(--bg2);border:1px solid var(--line2);color:var(--mute);
+    font:inherit;font-size:12px;font-family:'JetBrains Mono',monospace;padding:6px 11px;
+    border-radius:20px;cursor:pointer;white-space:nowrap;transition:.15s}
+  .syncpill:hover{border-color:var(--ember)}
+  .syncpill.ok{color:var(--leaf);border-color:#4a5230}
+  .syncpill.busy{color:var(--ember2);border-color:#5c3b1f}
+  .syncpill.err{color:var(--bad);border-color:#5a2f24}
+  .tag{color:var(--ink2);font-size:14.5px;margin:8px 2px 0;font-style:italic;
+    font-family:'Fraunces',serif}
+
+  /* Tabs */
+  nav{position:sticky;top:0;z-index:30;background:linear-gradient(var(--bg) 70%, transparent);
+    padding:10px 16px 12px;max-width:880px;margin:0 auto}
+  .tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:12px;padding:4px}
+  .tabs button{flex:1;appearance:none;border:0;background:transparent;color:var(--mute);
+    font:inherit;font-weight:600;font-size:14px;padding:9px 6px;border-radius:9px;
+    cursor:pointer;transition:.15s;letter-spacing:.01em}
+  .tabs button[aria-selected=true]{background:var(--card2);color:var(--ink);box-shadow:var(--shadow)}
+  .tabs button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+
+  .panel{display:none;animation:fade .35s ease}
+  .panel.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Cards */
+  .card{background:linear-gradient(180deg,var(--card),var(--bg2));
+    border:1px solid var(--line);border-radius:var(--rad);box-shadow:var(--shadow)}
+  .pad{padding:18px}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+
+  /* ---- Palate (hero) ---- */
+  .verdict{padding:22px 20px 20px;position:relative;overflow:hidden}
+  .verdict h2{font-size:15px;color:var(--mute);font-family:'Inter';font-weight:600;
+    letter-spacing:.02em;text-transform:none}
+  .verdict .line{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(26px,7vw,40px);
+    line-height:1.12;margin-top:8px;letter-spacing:-.02em}
+  .verdict .line em{font-style:italic;color:var(--ember2)}
+  .verdict .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px 18px;
+    font-size:13px;color:var(--ink2);font-family:'JetBrains Mono',monospace}
+  .verdict .meta b{color:var(--ink);font-weight:500}
+
+  .grid{display:grid;gap:12px;margin-top:12px}
+  @media(min-width:620px){.grid.two{grid-template-columns:1fr 1fr}}
+
+  .rank h3{font-size:13px;color:var(--ink2);font-family:'Inter';font-weight:700;
+    letter-spacing:.02em;margin-bottom:2px}
+  .rank .hint{font-size:11.5px;color:var(--faint);margin-bottom:12px}
+  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;
+    padding:7px 0;border-top:1px solid var(--line)}
+  .row:first-of-type{border-top:0}
+  .row .name{font-size:14px;display:flex;align-items:center;gap:8px;min-width:0}
+  .row .name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .n{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);
+    border:1px solid var(--line2);border-radius:20px;padding:1px 7px;flex:none}
+  .bar{height:6px;border-radius:6px;background:#3a2c1f;overflow:hidden;width:104px;flex:none}
+  .bar i{display:block;height:100%;border-radius:6px;
+    background:linear-gradient(90deg,var(--ember),var(--ember2))}
+  .score{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ash);
+    width:34px;text-align:right;flex:none}
+  .rankrow{display:grid;grid-template-columns:1fr 104px 34px;align-items:center;
+    gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .rankrow:first-of-type{border-top:0}
+  .rankrow .name{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-width:0;font-size:14px}
+  .n{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mute);
+    border:1px solid var(--line2);border-radius:20px;padding:1px 7px;flex:none;line-height:1.7}
+
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);border-radius:var(--rad);overflow:hidden;border:1px solid var(--line)}
+  .stat{background:var(--bg2);padding:14px 12px;text-align:center}
+  .stat .v{font-family:'Fraunces',serif;font-size:26px;font-weight:500;color:var(--ink)}
+  .stat .v small{font-size:14px;color:var(--mute)}
+  .stat .k{font-size:11px;color:var(--mute);margin-top:2px;letter-spacing:.02em}
+
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+  .chip{font-size:12.5px;padding:5px 11px;border-radius:20px;border:1px solid var(--line2);
+    background:#2d2218;color:var(--ink2);display:flex;align-items:center;gap:7px}
+  .chip b{color:var(--ember2);font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12px}
+  .chip .c{color:var(--faint);font-family:'JetBrains Mono',monospace;font-size:10.5px}
+
+  /* ---- Journal ---- */
+  .toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .search{flex:1;min-width:160px;position:relative}
+  .search input{width:100%}
+  .sortsel{flex:none}
+  .entry{padding:14px 16px;cursor:pointer;transition:.12s;position:relative}
+  .entry:hover{background:var(--card2)}
+  .entry .top{display:flex;align-items:baseline;gap:10px}
+  .entry .nm{font-family:'Fraunces',serif;font-size:18px;font-weight:500;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .entry .br{font-size:12.5px;color:var(--mute);text-transform:uppercase;
+    letter-spacing:.06em;font-family:'JetBrains Mono',monospace}
+  .entry .dt{margin-left:auto;font-size:12px;color:var(--faint);
+    font-family:'JetBrains Mono',monospace;flex:none}
+  .entry .mid{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .tagm{font-size:11px;padding:2px 8px;border-radius:6px;background:#2e2319;
+    border:1px solid var(--line);color:var(--ink2);font-family:'JetBrains Mono',monospace}
+  .tagm.o{color:var(--ember2);border-color:#5c3b1f}
+  .entry .nt{font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.45;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .rate{display:flex;align-items:center;gap:7px;flex:none}
+  .rate .num{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--ember2)}
+  .embers{display:flex;gap:2px}
+  .e{width:7px;height:7px;border-radius:50%;background:#3c2d1f}
+  .e.f{background:radial-gradient(circle at 35% 30%,var(--ember2),var(--ember) 60%);
+    box-shadow:0 0 6px #e07a3766}
+  .e.h{background:linear-gradient(90deg,var(--ember) 50%,#3c2d1f 50%)}
+  .soc{font-size:10px;color:var(--leaf);border:1px solid #4a5230;border-radius:5px;
+    padding:1px 5px;font-family:'JetBrains Mono',monospace}
+  .sep{height:1px;background:var(--line);margin:0 16px}
+
+  /* ---- Forms ---- */
+  label.fl{display:block;font-size:12px;color:var(--mute);margin:0 0 5px 2px;
+    letter-spacing:.02em;font-weight:500}
+  input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);
+    color:var(--ink);font:inherit;font-size:15px;padding:11px 12px;border-radius:var(--rad-s);
+    transition:.15s}
+  textarea{resize:vertical;min-height:74px;line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ember);
+    box-shadow:0 0 0 3px #e07a3722;background:#2a2017}
+  input::placeholder,textarea::placeholder{color:var(--faint)}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%239c876c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .fgrid{display:grid;gap:14px}
+  @media(min-width:560px){.fgrid.c2{grid-template-columns:1fr 1fr}.fgrid.c3{grid-template-columns:1fr 1fr 1fr}}
+  .field{min-width:0}
+
+  /* rating picker */
+  .ratepick{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .stars{display:flex;gap:3px}
+  .stars button{appearance:none;border:0;background:transparent;cursor:pointer;padding:3px;
+    font-size:0;line-height:0}
+  .stars .dot{width:22px;height:22px;border-radius:50%;background:#3c2d1f;display:block;
+    transition:.12s;border:1px solid #00000033}
+  .stars button.on .dot{background:radial-gradient(circle at 35% 30%,var(--ember2),var(--ember) 60%);
+    box-shadow:0 0 10px #e07a3755}
+  .stars button.half .dot{background:linear-gradient(90deg,var(--ember) 50%,#3c2d1f 50%)}
+  .rateval{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--ember2);
+    min-width:46px;font-weight:500}
+  .ratehint{font-size:12px;color:var(--faint)}
+
+  .btn{appearance:none;border:0;font:inherit;font-weight:600;font-size:15px;cursor:pointer;
+    border-radius:var(--rad-s);padding:13px 18px;transition:.15s;letter-spacing:.01em}
+  .btn.primary{background:linear-gradient(180deg,var(--ember2),var(--ember));color:#241206;
+    box-shadow:0 6px 18px -8px #e07a37aa}
+  .btn.primary:hover{filter:brightness(1.06)}
+  .btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--ink2)}
+  .btn.ghost:hover{border-color:var(--ember);color:var(--ink)}
+  .btn:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+  .btnrow{display:flex;gap:10px;margin-top:6px}
+  .btnrow .btn.primary{flex:1}
+
+  .prefill{font-size:12px;color:var(--leaf);margin-top:7px;display:none;align-items:center;gap:6px}
+  .prefill.nomatch{color:var(--mute)}
+  .prefill.show{display:flex}
+
+  /* detail modal */
+  .scrim{position:fixed;inset:0;background:#0c0905cc;backdrop-filter:blur(3px);
+    display:none;z-index:60;align-items:flex-end;justify-content:center}
+  .scrim.on{display:flex}
+  @media(min-width:620px){.scrim.on{align-items:center}}
+  .sheet{background:linear-gradient(180deg,var(--card),var(--bg2));width:100%;max-width:560px;
+    border:1px solid var(--line2);border-radius:18px 18px 0 0;max-height:88vh;overflow:auto;
+    box-shadow:0 -10px 40px #000a}
+  @media(min-width:620px){.sheet{border-radius:18px}}
+  .sheet .hd{padding:20px 20px 0;position:sticky;top:0}
+  .sheet .x{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
+    border:1px solid var(--line2);background:var(--bg2);color:var(--ink2);font-size:16px;
+    cursor:pointer;line-height:1}
+  .dl{display:grid;grid-template-columns:auto 1fr;gap:9px 18px;padding:8px 20px 4px;font-size:14px}
+  .dl dt{color:var(--mute);font-size:12.5px;font-family:'JetBrains Mono',monospace;align-self:center}
+  .dl dd{margin:0;color:var(--ink)}
+  .dnotes{padding:10px 20px 18px;color:var(--ink2);font-size:14.5px;line-height:1.55;
+    font-family:'Fraunces',serif;font-style:italic}
+  .delrow{padding:0 20px 22px;display:flex;justify-content:flex-end}
+  .del{background:transparent;border:1px solid #5a2f24;color:#cc7559;font:inherit;font-size:13px;
+    padding:8px 14px;border-radius:8px;cursor:pointer}
+
+  .empty{text-align:center;color:var(--mute);padding:50px 20px;font-style:italic;
+    font-family:'Fraunces',serif;font-size:17px}
+  .foot{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+  .foot button{background:transparent;border:1px solid var(--line);color:var(--mute);
+    font:inherit;font-size:12.5px;padding:8px 13px;border-radius:8px;cursor:pointer}
+  .foot button:hover{border-color:var(--line2);color:var(--ink2)}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#2e2318;border:1px solid var(--line2);color:var(--ink);padding:11px 18px;
+    border-radius:30px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:.25s;
+    z-index:80;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .sectionhead{display:flex;align-items:baseline;gap:10px;margin:26px 2px 12px}
+  .sectionhead h2{font-size:21px}
+  .sectionhead .c{font-size:12px;color:var(--faint);font-family:'JetBrains Mono',monospace;margin-left:auto}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="mark"></span>
+    <h1>Ember</h1>
+    <div class="rightgrp">
+      <span class="sub" id="hdcount"></span>
+      <button id="syncbtn" class="syncpill">○ Local</button>
+    </div>
+  </div>
+  <div class="tag">A journal for the leaf — and what it tells you about your palate.</div>
+</header>
+
+<nav>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="palate">Palate</button>
+    <button role="tab" aria-selected="false" data-tab="journal">Journal</button>
+    <button role="tab" aria-selected="false" data-tab="log">Log a smoke</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ===== PALATE ===== -->
+  <section class="panel on" id="palate" role="tabpanel">
+    <div class="card verdict" id="verdict"></div>
+
+    <div class="stat-strip" id="statstrip"></div>
+
+    <div class="sectionhead"><h2>What you reach for</h2><span class="c">avg rating · ×N = times logged</span></div>
+    <div class="card pad rank" id="flavors"></div>
+
+    <div class="grid two" style="margin-top:12px">
+      <div class="card pad rank" id="rk-origin"></div>
+      <div class="card pad rank" id="rk-wrapper"></div>
+    </div>
+    <div class="grid two">
+      <div class="card pad rank" id="rk-binder"></div>
+      <div class="card pad rank" id="rk-filler"></div>
+    </div>
+    <div class="grid two">
+      <div class="card pad rank" id="rk-body"></div>
+      <div class="card pad rank" id="rk-shape"></div>
+    </div>
+
+    <div class="sectionhead"><h2>Top of the humidor</h2><span class="c">highest rated</span></div>
+    <div class="card" id="toprated"></div>
+
+    <div class="foot">
+      <button id="backfill">Fill blanks from catalog</button>
+      <button id="exp-json">Export backup (.json)</button>
+      <button id="exp-csv">Export spreadsheet (.csv)</button>
+      <button id="imp">Import backup</button>
+      <input type="file" id="impfile" accept=".json" hidden>
+    </div>
+  </section>
+
+  <!-- ===== JOURNAL ===== -->
+  <section class="panel" id="journal" role="tabpanel">
+    <div class="toolbar">
+      <div class="search"><input id="q" placeholder="Search brand, blend, flavor, origin…"></div>
+      <select id="sort" class="sortsel">
+        <option value="date">Newest first</option>
+        <option value="rating">Highest rated</option>
+        <option value="oldest">Oldest first</option>
+        <option value="name">A → Z</option>
+      </select>
+    </div>
+    <div class="card" id="list"></div>
+  </section>
+
+  <!-- ===== LOG ===== -->
+  <section class="panel" id="log" role="tabpanel">
+    <div class="card pad">
+      <div class="eyebrow">New entry</div>
+      <div class="fgrid">
+        <div class="field">
+          <label class="fl" for="f-label">Blend / line</label>
+          <input id="f-label" list="dl-label" placeholder="e.g. Serie V Melanio" autocomplete="off">
+          <div class="prefill" id="prefill">✓ Filled details from a known blend — tweak anything</div>
+          <button class="btn ghost" id="lookup" style="margin-top:9px;font-size:13px;padding:9px 14px;width:auto">Look up online</button>
+        </div>
+        <div class="fgrid c2">
+          <div class="field">
+            <label class="fl" for="f-brand">Brand</label>
+            <input id="f-brand" list="dl-brand" placeholder="e.g. Oliva" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="fl" for="f-date">Date</label>
+            <input id="f-date" type="date">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="fl">Your rating</label>
+          <div class="ratepick">
+            <div class="stars" id="stars"></div>
+            <span class="rateval" id="rateval">—</span>
+            <span class="ratehint">tap once = half · twice = full</span>
+          </div>
+        </div>
+
+        <div class="fgrid c2">
+          <div class="field">
+            <label class="fl" for="f-origin">Origin</label>
+            <input id="f-origin" list="dl-origin" placeholder="e.g. Nicaragua" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="fl" for="f-body">Body</label>
+            <select id="f-body">
+              <option value="">—</option>
+              <option>Light</option><option>Med-Light</option><option>Med</option>
+              <option>Med-Full</option><option>Full</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fgrid c2">
+          <div class="field">
+            <label class="fl" for="f-wrapper">Wrapper</label>
+            <input id="f-wrapper" list="dl-wrapper" placeholder="e.g. San Andres" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="fl" for="f-wnote">Wrapper note</label>
+            <input id="f-wnote" list="dl-wnote" placeholder="Maduro, Oscuro, Sun Grown…" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="fgrid c2">
+          <div class="field">
+            <label class="fl" for="f-binder">Binder</label>
+            <input id="f-binder" list="dl-binder" placeholder="e.g. Nicaraguan" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="fl" for="f-shape">Shape</label>
+            <input id="f-shape" list="dl-shape" placeholder="e.g. Toro" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="fl" for="f-filler">Filler <span style="color:var(--faint)">— comma separated</span></label>
+          <input id="f-filler" placeholder="e.g. Nicaraguan, Dominican" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label class="fl" for="f-notes">Tasting notes</label>
+          <textarea id="f-notes" placeholder="Flavors, draw, burn, where you were, what you'd change…"></textarea>
+        </div>
+
+        <label class="fl" style="display:flex;align-items:center;gap:9px;cursor:pointer;margin:0">
+          <input type="checkbox" id="f-social" style="width:auto;accent-color:var(--ember)">
+          Smoked socially (you rate these higher — worth tracking)
+        </label>
+
+        <div class="btnrow">
+          <button class="btn primary" id="save">Add to journal</button>
+          <button class="btn ghost" id="clear">Clear</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- datalists -->
+<datalist id="dl-label"></datalist>
+<datalist id="dl-brand"></datalist>
+<datalist id="dl-origin"></datalist>
+<datalist id="dl-wrapper"></datalist>
+<datalist id="dl-wnote"></datalist>
+<datalist id="dl-binder"></datalist>
+<datalist id="dl-shape"></datalist>
+
+<!-- detail sheet -->
+<div class="scrim" id="scrim">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ SEED DATA (Austin's real log; brand spellings lightly normalized) ============ */
+const SEED = [
+ {d:"2021-10-01",b:"My Father",l:"Fonseca",sh:"Toro",bd:"Med",w:"Nicaraguan Corojo",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.5,s:0,n:""},
+ {d:"2021-10-14",b:"Drew Estate",l:"Estelli",sh:"Toro",bd:"",w:"Ecuador Habano",wn:"",bn:"Honduran",fi:["Nicaraguan"],o:"",r:4.75,s:0,n:""},
+ {d:"2021-10-21",b:"Rocky Patel",l:"Connecticut Vintage 1999",sh:"Double Toro",bd:"Light",w:"Connecticut",wn:"",bn:"",fi:["Dominican","Nicaraguan"],o:"",r:3.75,s:0,n:"Definitely a bite to it, peppery, almost limey. Not really my cup of tea, but could tell it was a quality cigar."},
+ {d:"2021-12-26",b:"Drew Estate",l:"Undercrown Shade",sh:"Toro",bd:"Med",w:"Ecuador Connecticut",wn:"",bn:"Sumatra",fi:["Dominican","Nicaraguan"],o:"",r:4,s:0,n:"Smooth. Leathery. Would happily smoke several more (journalled too long after — can't remember all the notes)."},
+ {d:"2021-01-01",b:"Punch",l:"Cigar City Brewing",sh:"Toro",bd:"Full",w:"Honduran Habano",wn:"Maduro",bn:"Honduran Habano",fi:["Honduran Habano"],o:"",r:4,s:0,n:"Good flavor up front. Leathery and meaty. But left a pretty bitter aftertaste."},
+ {d:"2022-01-18",b:"Rocky Patel",l:"Connecticut Vintage 1999",sh:"Double Toro",bd:"Light",w:"Connecticut",wn:"",bn:"",fi:["Dominican","Nicaraguan"],o:"",r:4,s:0,n:"Used a V cut this time. Less acidic bite, softer flavors. Still left strong aftertaste and smelly clothes."},
+ {d:"2022-03-20",b:"Arturo Fuente",l:"Hemingway Signature",sh:"",bd:"",w:"Cameroon",wn:"",bn:"Dominican",fi:["Dominican"],o:"",r:null,s:0,n:""},
+ {d:"2022-06-22",b:"Casa Magna",l:"Liga F",sh:"Double Toro",bd:"Med",w:"Ecuador Corojo",wn:"Sun Grown",bn:"Dominican",fi:["Dominican","Nicaraguan"],o:"",r:4.75,s:0,n:"Leathery, slightly sweet, woody, super smooth."},
+ {d:"2022-07-19",b:"My Father",l:"La Opulencia",sh:"",bd:"",w:"San Andres",wn:"Oscuro",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.5,s:0,n:"Graham cracker."},
+ {d:"2022-07-21",b:"Padron",l:"1926 Maduro",sh:"",bd:"Full",w:"Nicaraguan",wn:"Maduro",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.75,s:0,n:"Chocolate, graham cracker, s'more, chocolate-orange. Learned to retrohale, which really opened up the flavor amazingly."},
+ {d:"2022-07-25",b:"Victor Sinclair",l:"Primero",sh:"Churchill",bd:"Light",w:"Connecticut",wn:"",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:3.5,s:0,n:"Apricot, cherry tootsie pop."},
+ {d:"2022-09-24",b:"Don Pepin Garcia",l:"Original Sparky",sh:"Short Robusto",bd:"Full",w:"Corojo",wn:"Oscuro",bn:"Nicaraguan",fi:["Nicaraguan"],o:"",r:4.25,s:0,n:"Toasty, cracker, slight spice."},
+ {d:"2022-09-26",b:"Rocky Patel",l:"15th Anniversary",sh:"Robusto",bd:"Full",w:"Ecuador Habano",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"Strongest cigar I've had. Very rich. Dark chocolate."},
+ {d:"2022-11-05",b:"Regius",l:"Arbiter Elegantiae",sh:"Gordo",bd:"Med",w:"Nicaraguan",wn:"Shade Grown",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"Sweet, a touch of acid, pairs well with coffee."},
+ {d:"2022-11-12",b:"CAO",l:"Vision",sh:"Toro",bd:"Full",w:"Cameroon",wn:"",bn:"Dominican",fi:["Nicaraguan","Honduran","Dominican"],o:"",r:4.5,s:1,n:"Chocolate, raisin, baked/toasty, super smooth all the way through."},
+ {d:"2022-11-19",b:"My Father",l:"La Promesa",sh:"Toro",bd:"Med",w:"Ecuador Habano",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"The smoke was creamy — haven't experienced this texture before. Sweet and medium bodied, no real bitterness."},
+ {d:"2023-01-19",b:"Casa Magna",l:"D Magnus II",sh:"Perfecto",bd:"Med-Full",w:"Nicaraguan Jalapa",wn:"Sun Grown",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"A bit of spice, some cocoa."},
+ {d:"2023-03-22",b:"Perdomo",l:"20th Anniversary",sh:"Toro",bd:"Full",w:"Habano",wn:"Maduro",bn:"",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"Meaty, molasses, dark, thick, woody (barrel aged)."},
+ {d:"2023-04-17",b:"CAO",l:"Amazon Anaconda",sh:"Double Toro",bd:"Full",w:"Brazilian",wn:"",bn:"",fi:["Colombian","Dominican","Brazilian"],o:"Honduras",r:4.5,s:1,n:"Leathery, chocolate, smooth."},
+ {d:"2023-06-12",b:"Deadwood",l:"Crazy Alice",sh:"Pyramid",bd:"Med",w:"Brazilian",wn:"Maduro",bn:"Indonesian",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"Tastes infused but apparently it's not? Consistent flavor all the way through. Smooth."},
+ {d:"2023-06-23",b:"Plasencia",l:"Alma Fuerte",sh:"Robusto",bd:"Full",w:"Nicaraguan Jalapa",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.5,s:0,n:"Very toasty, cracker, some pepper."},
+ {d:"2023-06-30",b:"Arturo Fuente",l:"Double Chateau Sungrown",sh:"Churchill",bd:"Med",w:"Ecuador",wn:"Sun Grown",bn:"Dominican",fi:["Dominican"],o:"",r:4,s:0,n:"Chocolatey, smooth, light spice."},
+ {d:"2023-07-13",b:"Alec Bradley",l:"Project 40",sh:"Robusto",bd:"Light",w:"Nicaraguan",wn:"",bn:"Brazil Habano",fi:["Nicaraguan"],o:"Nicaragua",r:2.5,s:0,n:"Not for me."},
+ {d:"2023-08-04",b:"Camacho",l:"Triple Maduro",sh:"Toro",bd:"Full",w:"San Andres",wn:"Maduro",bn:"Corojo",fi:["Brazilian","Dominican","Honduran"],o:"Honduras",r:4.25,s:0,n:"Smooth all the way through. Slightly sweet."},
+ {d:"2023-08-28",b:"EP Carrillo",l:"Pledge",sh:"",bd:"Full",w:"Connecticut Habano",wn:"",bn:"Ecuador",fi:["Nicaraguan"],o:"Dominican",r:4.5,s:0,n:"Rich and full."},
+ {d:"2023-09-01",b:"Anthony's House Blend",l:"Maduro Box Pressed",sh:"Toro",bd:"Full",w:"",wn:"Maduro",bn:"",fi:[],o:"",r:4,s:0,n:"Similar to Factory Smokes, a little darker."},
+ {d:"2023-09-08",b:"EP Carrillo",l:"Encore",sh:"Robusto",bd:"Med",w:"Nicaraguan",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Dominican",r:4.25,s:0,n:"Smooth, nice sweetness at the end, a little age."},
+ {d:"2023-09-15",b:"EP Carrillo",l:"La Historia",sh:"Toro",bd:"Med-Full",w:"San Andres",wn:"Maduro",bn:"Ecuador Sumatra",fi:["Dominican","Nicaraguan"],o:"Dominican",r:4.5,s:0,n:"Fantastic smoke all the way through. Bound really well. Little peppery, little sweet, little chocolate."},
+ {d:"2023-09-23",b:"Oliva",l:"Serie V Melanio Maduro",sh:"",bd:"Med-Full",w:"San Andres",wn:"Maduro",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.75,s:1,n:"Black pepper, chocolate — one of the best cigars I've had."},
+ {d:"2023-09-28",b:"My Father",l:"Flor De Las Antillas Maduro",sh:"",bd:"Med",w:"Ecuador Habano",wn:"Maduro, Sun Grown",bn:"Nicaraguan",fi:["Nicaraguan"],o:"",r:2.75,s:0,n:"A little sweet, leathery, but mostly bitter and acidic. Not great."},
+ {d:"2023-10-19",b:"Drew Estate",l:"Nica Rustica",sh:"Belicoso",bd:"Full",w:"Connecticut Broadleaf",wn:"",bn:"San Andres",fi:["Nicaraguan"],o:"Nicaragua",r:4,s:0,n:"Chocolate, funky, sweet."},
+ {d:"2023-11-03",b:"Arturo Fuente",l:"Reserva Don Carlos",sh:"Robusto",bd:"Med",w:"Cameroon",wn:"",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:3.75,s:0,n:"Noticeable funk in first 2/3, sweet, a little acid, nutty."},
+ {d:"2023-12-15",b:"CAO",l:"Flathead 660",sh:"Gordo",bd:"Full",w:"Connecticut Broadleaf",wn:"",bn:"Connecticut Habano",fi:["Dominican","Nicaraguan"],o:"Nicaragua",r:4,s:0,n:"Solid cigar. Not super complex, but something I'd easily return to."},
+ {d:"2024-01-27",b:"Oliva",l:"Serie V Melanio Maduro",sh:"Figurado",bd:"Med-Full",w:"San Andres",wn:"Maduro",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.75,s:0,n:"Black pepper, chocolate, sweeter as it progressed."},
+ {d:"2024-01-27",b:"Liga Privada",l:"Papas Fritas",sh:"Corona",bd:"Med-Full",w:"Connecticut Broadleaf",wn:"Maduro",bn:"Brazilian Mata Fina",fi:["Nicaraguan","Honduran"],o:"",r:4,s:0,n:""},
+ {d:"2024-02-02",b:"Oliva",l:"Serie V 135th Anniversary",sh:"Perfecto",bd:"Full",w:"Ecuador Habano",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:3.75,s:0,n:"Crackery, sweet, little peppery."},
+ {d:"2024-02-05",b:"Blackened by Drew Estate",l:"M81",sh:"Churchill",bd:"Full",w:"San Andres",wn:"Maduro",bn:"Connecticut Broadleaf",fi:["Nicaraguan","Penn. Broadleaf"],o:"Nicaragua",r:5,s:1,n:"Sweet spices, almost like rum-dipped but more natural, smooth all the way through."},
+ {d:"2024-02-09",b:"LFD",l:"Double Ligero",sh:"Gordo",bd:"Full",w:"Ecuador Sumatra",wn:"Oscuro",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:3.75,s:0,n:"60 ring is too big — cap came off. Flavor decent but prefer a smaller stick. Bready, chocolatey, a little spice."},
+ {d:"2024-02-16",b:"Blackened by Drew Estate",l:"M81",sh:"Churchill",bd:"Full",w:"San Andres",wn:"Maduro",bn:"Connecticut Broadleaf",fi:["Nicaraguan","Penn. Broadleaf"],o:"Nicaragua",r:4.75,s:0,n:"Social gatherings always enhance flavor and this was alone — still one of the best sticks I've had."},
+ {d:"2024-02-23",b:"EP Carrillo",l:"Encore",sh:"Robusto",bd:"Med",w:"Nicaraguan",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Dominican",r:4.25,s:0,n:"Smooth, nice sweetness at the end, a little age."},
+ {d:"2024-03-26",b:"Alec Bradley",l:"Maxx",sh:"",bd:"Med",w:"Nicaraguan",wn:"Maduro",bn:"Costa Rican",fi:["Colombian","San Andres","Nicaraguan"],o:"",r:3.75,s:0,n:""},
+ {d:"2024-04-05",b:"Aging Room",l:"Quattro Nicaragua",sh:"",bd:"Med-Full",w:"Nicaraguan",wn:"",bn:"Nicaraguan",fi:["Nicaraguan"],o:"Nicaragua",r:4.25,s:0,n:"Solid smoke. Would smoke again."},
+ {d:"2024-04-10",b:"La Aroma de Cuba",l:"Mi Amor",sh:"",bd:"Med-Full",w:"San Andres",wn:"",bn:"",fi:["Nicaraguan"],o:"Nicaragua",r:4,s:0,n:"Noticeable funk and sweetness, lingering sweetness."},
+ {d:"2024-04-19",b:"Arturo Fuente",l:"Anejo Reserva",sh:"Churchill",bd:"",w:"Connecticut Broadleaf",wn:"Maduro, Cognac Barrel",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:4.25,s:0,n:"Super long smoke, more enjoyable after the first third. Nice sweetness, peppery, leathery. Pretty tight draw."},
+ {d:"2024-05-11",b:"Liga Privada",l:"T52",sh:"Double Robusto",bd:"Full",w:"Connecticut Habano",wn:"Sun Grown",bn:"Brazilian Mata Fina",fi:["Honduran","Nicaraguan"],o:"Nicaragua",r:4.75,s:0,n:"So much chocolate, sweet, smooth."},
+ {d:"2024-08-09",b:"Romeo y Julieta",l:"Reserva Maduro",sh:"Corona",bd:"Med",w:"Connecticut Broadleaf",wn:"Maduro",bn:"",fi:["Dominican","Nicaraguan","Peruvian"],o:"Dominican",r:4.5,s:0,n:"Sweet, leathery, a little pepper."},
+ {d:"2025-03-05",b:"CAO",l:"Amazon Basin",sh:"",bd:"Med-Full",w:"Ecuador Sumatra",wn:"",bn:"Nicaraguan",fi:["Dominican","Brazilian","Colombian"],o:"",r:4.25,s:0,n:""},
+ {d:"2025-06-06",b:"Arturo Fuente",l:"Casa Cuba Flora Fina",sh:"",bd:"Med-Light",w:"Ecuador",wn:"",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:4.25,s:0,n:""},
+ {d:"2025-06-12",b:"Arturo Fuente",l:"Don Carlos Eye of the Shark",sh:"",bd:"Med-Full",w:"Cameroon",wn:"",bn:"Dominican",fi:["Dominican"],o:"Dominican",r:4,s:0,n:"Super tight draw at the beginning due to bad cut, but turned out good. Leather, pepper, smooth."},
+ {d:"2025-10-24",b:"Arturo Fuente",l:"Gran Reserva",sh:"",bd:"Med-Full",w:"",wn:"",bn:"",fi:[],o:"",r:4.75,s:1,n:"Came with red ribbon and tiny opening to light. Think it was a Maduro too?"},
+ {d:"2026-06-22",b:"EP Carrillo",l:"Encore Black",sh:"",bd:"",w:"",wn:"",bn:"",fi:[],o:"",r:4.75,s:0,n:"Chocolatey and sweet. Great draw to the end."}
+];
+
+/* Reference catalog — full CigarsInternational scrape from your sheet (1,238 cigars) */
+const REF = [{"l":"1876 Reserve","w":"Connecticut","o":"Dominican","bn":"Sumatra","fi":["Dominican"]},{"l":"1876 Reserve Maduro","w":"Maduro","o":"Dominican","bn":"Dominican","fi":[]},{"l":"5 Vegas Big Five","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"5 Vegas Cask-Strength","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"5 Vegas Classic","w":"Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"5 Vegas Gold","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"5 Vegas Gold Anniversary","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"5 Vegas Nicaragua","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"5 Vegas Petites","w":"Ecuador Sumatra","o":"Dominican","bn":"Nicaraguan","fi":["Brazilian","Dominican"]},{"l":"5 Vegas Series A","w":"Costa Rican","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"5 Vegas Triple-A","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"601 Blue Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"601 Green Oscuro","w":"Habano Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"601 Red Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"ACID 20 by Drew Estate","w":"San Andres","o":"Nicaragua","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"ACID 20 Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"ACID Blondie Cigars by Drew Estate","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan","Varied"]},{"l":"ACID Cigars by Drew Estate","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":["Varied"]},{"l":"ACID Cigars by Drew Estate Opulence 3","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"ACID Kuba Kuba Cigars by Drew Estate","w":"Candela","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"ACID Ltd. by Drew Estate Def Sea","w":"Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Arsenio","w":"Corojo","o":"Nicaragua","bn":"Criollo '98","fi":["Nicaraguan"]},{"l":"AGANORSA Leaf Aniversario","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AGANORSA Leaf Aniversario Maduro","w":"Corojo","o":"United States","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf Anniversario Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf La Validacion Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf La Validacion Corojo","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf La Validacion Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf La Validacion Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Leaf Signature Selection","w":"Corojo","o":"Nicaragua","bn":"Corojo","fi":[]},{"l":"Aganorsa Overruns","w":"Corojo","o":"Nicaragua","bn":"","fi":[]},{"l":"Aganorsa Rare Leaf","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Criollo '98","fi":["Nicaraguan"]},{"l":"Aganorsa Rare Leaf Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aganorsa Signature Maduro","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aging Room Pura Cepa","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aging Room Quattro Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Aging Room Quattro Maduro","w":"San Andres","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Aging Room Quattro Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Aging Room Quattro Nicaragua Sonata","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Aging Room Quattro Original","w":"Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Agio Mehari's","w":"Brazilian","o":"Europe","bn":"","fi":[]},{"l":"AJ Fernandez Bellas Artes","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Brazilian","Honduran"]},{"l":"AJ Fernandez Bellas Artes Maduro","w":"Brazilian","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"AJ Fernandez Dias de Gloria","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez Dias de Gloria Brazil","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez Enclave","w":"Habano","o":"Nicaragua","bn":"Cameroon","fi":["Nicaraguan"]},{"l":"AJ Fernandez Enclave Broadleaf","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez La Gran Llave Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"AJ Fernandez Last Call","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez Last Call Maduro","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez New World","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez New World Cameroon","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez New World Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Mexican","fi":["Brazilian","Nicaraguan"]},{"l":"AJ Fernandez New World Dorado","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez New World Puro Especial","w":"Habano","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"AJ Fernandez Ramon Allones","w":"Habano Oscuro","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"AJ Fernandez Ramon Allones Special Selection","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez Rosa de Guadalupe","w":"San Andres","o":"Nicaragua","bn":"","fi":[]},{"l":"AJ Fernandez San Lotano Oval","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"AJ Fernandez San Lotano Oval Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"AJ Fernandez San Lotano Oval Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"AJ Fernandez San Lotano Requiem","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"AJ Fernandez San Lotano Requiem Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"AJ Fernandez San Lotano Requiem Maduro","w":"San Andres","o":"Nicaragua","bn":"Honduran Broadleaf","fi":["Honduran","Nicaraguan"]},{"l":"Al Capone","w":"Brazilian","o":"Germany","bn":"","fi":[]},{"l":"Alec & Bradley Blind Faith","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec & Bradley Gatekeeper","w":"Ecuador Habano","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Alec & Bradley Kintsugi","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley American Classic Blend","w":"Honduran Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Alec Bradley American Sun Grown","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Alec Bradley Black Market","w":"Honduran","o":"Honduras","bn":"Sumatra","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Black Market Esteli","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Alec Bradley Black Market Vandal","w":"Maduro","o":"Honduras","bn":"Sumatra","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Black Market Vandal The Con","w":"Honduran Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Boy/Girl","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley Caribbean Cask","w":"Connecticut","o":"","bn":"","fi":[]},{"l":"Alec Bradley Cazadores","w":"Ecuador Habano","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Alec Bradley Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Coyol","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Double Broadleaf","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley Magic Toast","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley MAXX","w":"Habano Maduro","o":"Nicaragua","bn":"Costa Rica","fi":["Colombian","Mexican"]},{"l":"Alec Bradley Medalist","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Post Embargo Blend Code B15","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Prensado","w":"Honduran","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Prensado Fumas","w":"Corojo","o":"Honduras","bn":"","fi":["Nicaraguan"]},{"l":"Alec Bradley Prensado Lost Art","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Project 40","w":"Nicaraguan","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Alec Bradley Project 40 Maduro","w":"San Andres","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Alec Bradley Puck","w":"Habano Oscuro","o":"Honduras","bn":"Habano","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Select Connecticut","w":"Connecticut","o":"","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley Select Corojo","w":"Corojo","o":"Honduras","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"Alec Bradley Select Maduro","w":"Maduro","o":"Honduras","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Alec Bradley Superstition","w":"Habano","o":"Dominican","bn":"Sumatra","fi":["Dominican","Honduran"]},{"l":"Alec Bradley Tempus","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley Tempus Fumas","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley Tempus Maduro","w":"San Andres","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Tempus Nicaragua","w":"Nicaraguan","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Alec Bradley Texas Lancero","w":"Nicaraguan","o":"Nicaragua","bn":"Indonesian","fi":["Costa Rican","Honduran"]},{"l":"Alec Bradley The Lineage","w":"Honduran","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Alec Bradley Trilogy","w":"Cameroon","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Alec Bradley V2L Black","w":"Ligero","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Alec Bradley White Gold","w":"Connecticut","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Alta Gracia","w":"Sumatra","o":"Ireland","bn":"Indonesian","fi":["Dominican"]},{"l":"Arganese Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Indonesian","fi":["Dominican"]},{"l":"Arganese Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Arganese Il Mezzo","w":"Kentucky Fire-Cured","o":"Dominican","bn":"","fi":[]},{"l":"Arganese Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Arturo Fuente Chateau Fuente Series","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Arturo Fuente Chateau Fuente Series Sun Grown","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Arturo Fuente Don Carlos","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Arturo Fuente Gran Reserva","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Arturo Fuente Hemingway","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Ashton","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ashton Aged Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ashton Cabinet Selection","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ashton ESG","w":"Dominican","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ashton Heritage Puro Sol","w":"Ecuador Habano","o":"Dominican","bn":"Sungrown","fi":["Sungrown"]},{"l":"Ashton Small Cigars","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ashton Symmetry","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Ashton VSG","w":"Sun Grown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Astral Talanga Valley Selection Cigars","w":"Honduran","o":"Honduras","bn":"Mexican","fi":["Brazilian","Dominican"]},{"l":"Asylum","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Asylum 13","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Asylum 13 Authentic Corojo","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["No"]},{"l":"Asylum 13 Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Asylum 13 Oblongata","w":"Corojo","o":"Honduras","bn":"Corojo","fi":["Corojo"]},{"l":"Asylum 13 Oblongata Maduro","w":"Maduro","o":"Honduras","bn":"Corojo","fi":["Corojo"]},{"l":"Asylum 13 Ogre","w":"Candela","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Asylum Insidious","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Asylum Insidious Maduro","w":"San Andres","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Asylum Nyctophilia","w":"Maduro","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Avanti","w":"Kentucky Fire-Cured","o":"United States","bn":"","fi":[]},{"l":"Avanti Ramrod","w":"Maduro","o":"United States","bn":"United States","fi":[]},{"l":"Ave Maria","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Ave Maria Argentum","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Ave Maria Dark Knight","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Ave Maria Divinia","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Ave Maria Holy Grail","w":"Connecticut","o":"Nicaragua","bn":"San Andres","fi":["Nicaraguan"]},{"l":"Ave Maria Immaculata","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Ave Maria Lionheart","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Brazilian","Mexican"]},{"l":"Ave Maria Reconquista","w":"Brazilian","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"AVO Classic","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"AVO Classic Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"AVO Heritage","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"AVO Syncro Caribe","w":"Dominican","o":"Dominican","bn":"Ecuador","fi":["Dominican","Nicaraguan"]},{"l":"AVO Syncro Nicaragua","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"AVO Syncro Nicaragua Fogata","w":"Habana 2000","o":"Dominican","bn":"Mexican","fi":["Dominican","Nicaraguan"]},{"l":"AVO Syncro South America Ritmo","w":"Ecuador Habano","o":"Dominican","bn":"Mexican","fi":["Brazilian","Honduran"]},{"l":"AVO XO","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Baccarat","w":"Candela","o":"Honduras","bn":"Mexican","fi":["Honduran"]},{"l":"Baccarat Candela","w":"Candela","o":"Honduras","bn":"Mexican","fi":["Honduran"]},{"l":"Baccarat Nicaragua","w":"Habano","o":"Dominican","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"Backwoods Cigars","w":"Connecticut Broadleaf","o":"United States","bn":"Dominican","fi":[]},{"l":"Backwoods Honey Cigars","w":"Indonesian","o":"United States","bn":"Dominican","fi":[]},{"l":"Bahia Blu","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Bahia Brazil","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Bahia Cafe","w":"Indonesian","o":"Nicaragua","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Bahia Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Bahia Trinidad","w":"Criollo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Bandidos","w":"Sumatra","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Bandidos Black","w":"Maduro","o":"Dominican","bn":"","fi":[]},{"l":"Bandidos Blue Cigarillos","w":"Pennsylvania Broadleaf","o":"Honduras","bn":"","fi":[]},{"l":"Bandidos Honey Berry","w":"Pennsylvania Broadleaf","o":"Dominican","bn":"","fi":["Nicaraguan"]},{"l":"Bandidos Russian Cream","w":"Pennsylvania Broadleaf","o":"Dominican","bn":"","fi":["Nicaraguan"]},{"l":"Big Johnny by Island Jim","w":"Nicaraguan Jalapa","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Big Papi by David Ortiz","w":"Ecuador Habano","o":"Dominican","bn":"Criollo '98","fi":["Dominican","Nicaraguan"]},{"l":"Black & Mild","w":"Indonesian","o":"United States","bn":"","fi":[]},{"l":"Black & Mild Wood Tip","w":"Indonesian","o":"United States","bn":"","fi":[]},{"l":"Black Crown","w":"Ecuador Sumatra","o":"Honduras","bn":"Criollo","fi":["Dominican","Nicaraguan"]},{"l":"Black Label Trading Co. Last Rites","w":"Maduro","o":"Nicaragua","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Black Label Trading Co. Lawless","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Black Label Trading Co. Memento Mori","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Black Label Trading Co. Porcelain","w":"Connecticut","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan","Pennsylvania"]},{"l":"Black Label Trading Co. Royalty","w":"Ecuador Habano","o":"Dominican","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Black Label Trading Co. Salvation","w":"Ecuador Sungrown","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Black Works Studio Green Hornet","w":"Candela","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Black Works Studio Killer Bee","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Blackstone Cigars","w":"Indonesian","o":"United States","bn":"","fi":[]},{"l":"Blood Red Moon","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Blue Label B2 Cuban Wheels","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Panamanian"]},{"l":"Bolivar","w":"Ligero","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"Bolivar Cofradia","w":"Ecuador Sumatra","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Honduran","Nicaraguan"]},{"l":"Bolivar Gran Republica","w":"Ecuador Habano","o":"Honduras","bn":"Brazil","fi":["Brazilian","Colombian"]},{"l":"Brazilian Cream","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Brick House","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Brick House Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Brick House Fumas","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Brick House Fumas Connecticut","w":"Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"Brick House Fumas Maduro","w":"Maduro","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Brick House Maduro","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Brioso Bundles","w":"Honduran","o":"Nicaragua","bn":"Habano","fi":["Dominican","Honduran"]},{"l":"Brocatus","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Buffalo Trace Cigars","w":"Ecuador Sumatra","o":"Dominican","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Buffalo Trace Explorers","w":"Ecuador Sumatra","o":"Dominican","bn":"Nicaraguan","fi":["Brazilian","Dominican"]},{"l":"C'est La Vie","w":"Connecticut","o":"Nicaragua","bn":"Brazil","fi":["Dominican","Nicaraguan"]},{"l":"Cain by Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Cain Daytona by Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Cain F Nub by Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Cain Nub by Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Caldwell Anastasia","w":"Undisclosed","o":"Dominican","bn":"Undisclosed","fi":["Undisclosed"]},{"l":"Caldwell Blind Man's Bluff","w":"Ecuador Habano","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Caldwell Blind Man's Bluff Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Caldwell Blind Man's Bluff Maduro","w":"Maduro","o":"Dominican","bn":"Sumatra","fi":["Dominican"]},{"l":"Caldwell Blind Man's Bluff Nicaragua","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Caldwell Collection - E.S. Midnight Express","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Caldwell Collection - Long Live The King","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Caldwell Collection - The King Is Dead","w":"Corojo","o":"Dominican","bn":"Corojo","fi":["Dominican"]},{"l":"Caldwell Delano","w":"San Andres","o":"","bn":"","fi":[]},{"l":"Caldwell Eastern Standard","w":"Ecuador","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Caldwell Eastern Standard Habano","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Mexican"]},{"l":"Caldwell Essex","w":"Connecticut","o":"","bn":"","fi":[]},{"l":"Caldwell Long Live the King Limited Bar-None","w":"Corojo","o":"Dominican","bn":"Corojo","fi":["Dominican","Nicaraguan"]},{"l":"Caldwell Long Live the King Mad MoFo","w":"San Andres","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Caldwell Lost and Found 22 Minutes to Midnight Connecticut Radiante","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Caldwell Lost and Found 22 Minutes to Midnight Habano De Oro","w":"Habano","o":"Dominican","bn":"","fi":[]},{"l":"Caldwell Lost and Found Cream Machine","w":"Ecuador Habano","o":"Dominican","bn":"Indonesian","fi":["Dominican"]},{"l":"Caldwell Lost and Found Instant Classic San Andres","w":"San Andres","o":"Dominican","bn":"Sumatra","fi":["Dominican","Nicaraguan"]},{"l":"Caldwell Lost and Found La Whatever","w":"Ecuador Habano","o":"Dominican","bn":"Sumatra","fi":["Dominican","Honduran"]},{"l":"Caldwell Lost and Found PCS Broadleaf Box Press","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Caldwell Louis The Last","w":"Ecuador","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Caldwell Montrose","w":"Habano","o":"Dominican","bn":"","fi":["Nicaraguan"]},{"l":"Caldwell The Industrialist","w":"Honduran Connecticut","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Caldwell The Last Tsar","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Camacho Broadleaf","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Camacho Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Camacho Corojo","w":"Corojo","o":"Honduras","bn":"Corojo","fi":["Honduran"]},{"l":"Camacho Coyolar","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Camacho Ecuador","w":"Ecuador Habano","o":"Honduras","bn":"Brazil","fi":["Dominican","Honduran"]},{"l":"Camacho Factory Unleashed 3","w":"San Andres","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Camacho Nicaragua","w":"Ecuador Habano","o":"Honduras","bn":"Habano","fi":["Dominican","Honduran"]},{"l":"Camacho Pre-Embargo","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Cuban","Honduran"]},{"l":"Camacho Scorpion Fumas Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"","fi":["Nicaraguan"]},{"l":"Camacho Scorpion Sun Grown","w":"Ecuador Habano","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Camacho Triple Maduro","w":"Maduro","o":"Honduras","bn":"Corojo","fi":["Brazilian","Dominican"]},{"l":"CAO America","w":"Connecticut","o":"Honduras","bn":"Brazil","fi":["Dominican","Italian"]},{"l":"CAO Arcana Firewalker","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"CAO Black","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Mexican"]},{"l":"CAO Bones","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Connecticut","fi":["Dominican","Honduran"]},{"l":"CAO Brazilia","w":"Brazilian","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"CAO BX3","w":"Brazilian","o":"Nicaragua","bn":"Brazil","fi":["Brazilian","Honduran"]},{"l":"CAO Colombia","w":"Honduran","o":"Nicaragua","bn":"Cameroon","fi":["Brazilian","Colombian"]},{"l":"CAO Consigliere","w":"Brazilian","o":"Nicaragua","bn":"Honduran","fi":["Colombian","Dominican"]},{"l":"CAO Extreme","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"CAO Flathead","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Connecticut","fi":["Dominican","Nicaraguan"]},{"l":"CAO Flathead Steel Horse","w":"Connecticut","o":"Nicaragua","bn":"Brazil","fi":["Dominican","Honduran"]},{"l":"CAO Flathead V23","w":"Honduran","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"CAO Flavours","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"CAO Flavours Bella Vanilla","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican"]},{"l":"CAO Flavours Cherrybomb","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican"]},{"l":"CAO Flavours Eileen's Dream","w":"Cameroon","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"CAO Flavours Gold Honey","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"CAO Flavours Moontrance","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"CAO Gold","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"CAO Gold Maduro","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"CAO Italia","w":"Habano Maduro","o":"Honduras","bn":"Italian","fi":["Nicaraguan"]},{"l":"CAO L'Anniversaire Cameroon","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"CAO L'Anniversaire Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"CAO Mortal Coil","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Connecticut","fi":["Dominican","Honduran"]},{"l":"CAO Mx2","w":"Brazilian","o":"Nicaragua","bn":"Brazil","fi":["Dominican","Honduran"]},{"l":"CAO Nicaragua","w":"Honduran","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"CAO Pilon","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"CAO Pilon Anejo","w":"Sumatra","o":"Honduras","bn":"Habano","fi":["Dominican","Nicaraguan"]},{"l":"CAO Session","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"CAO Zocalo","w":"San Andres","o":"Nicaragua","bn":"Cameroon","fi":["Nicaraguan"]},{"l":"Casa de Garcia","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Honduran"]},{"l":"Casa de Garcia Nicaragua","w":"Nicaraguan","o":"Dominican","bn":"Nicaraguan","fi":["Connecticut"]},{"l":"Casa Fernandez Miami","w":"Nicaraguan","o":"United States","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Casa Fernandez Miami Reserva","w":"Nicaraguan","o":"United States","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Casa Fernandez Miami Reserva Maduro","w":"Maduro","o":"United States","bn":"Nicaraguan","fi":[]},{"l":"Casa Magna Colorado","w":"Ligero","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Casa Magna Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Nicaraguan","fi":[]},{"l":"Chillin' Moose","w":"Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"Chillin' Moose Bull Moose","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Chillin' Moose Too","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Churchill Deluxe by Caribe","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"CI Fresh-Rolled Cedar Fresh","w":"Ecuador Sumatra","o":"Honduras","bn":"Connecticut Broadleaf","fi":[]},{"l":"CI Fresh-Rolled Cuban Wheels","w":"Connecticut","o":"Honduras","bn":"Habano","fi":["Connecticut"]},{"l":"CI Fresh-Rolled Rosado Cuban Wheels","w":"Honduran","o":"Honduras","bn":"Honduran","fi":[]},{"l":"CI Knock-Offs - Coffee","w":"Maduro","o":"Nicaragua","bn":"","fi":[]},{"l":"CI Knock-offs - Coffee: Irish Cream","w":"Connecticut","o":"","bn":"","fi":[]},{"l":"CI Knock-Offs - Compare to Cohiba","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to La Gloria","w":"Ecuador Habano","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to Macanudo","w":"Connecticut","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to Montecristo","w":"Connecticut","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to Partagas","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to Romeo y Julieta","w":"Sumatra","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"CI Knock-Offs - Compare to White Label","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"CI Legends by Drew Estate","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"CI Legends by Drew Estate Black","w":"Brazilian","o":"Nicaragua","bn":"San Andres","fi":[]},{"l":"CLE Chele","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"CLE Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":[]},{"l":"CLE Prieto","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Cohiba Black","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Cohiba Blue","w":"Honduran","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Cohiba Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Mexican","fi":["Brazilian","Dominican"]},{"l":"Cohiba Macassar","w":"Connecticut","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Mexican"]},{"l":"Cohiba Nicaragua","w":"Habano Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Cohiba Pequenos","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Honduran"]},{"l":"Cohiba Puro Dominicana","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Cohiba Red Dot","w":"Cameroon","o":"Dominican","bn":"Indonesian","fi":["Dominican"]},{"l":"Cohiba Riviera","w":"San Andres","o":"Nicaragua","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Cohiba Royale","w":"Nicaraguan","o":"Honduras","bn":"Dominican","fi":["Dominican","Honduran"]},{"l":"Cohiba Weller 2023","w":"Nicaraguan Jalapa","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Brazilian","Nicaraguan"]},{"l":"Crown Heads Mil Dias Marranitos Edición Limitada 2023","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Costa Rican","Nicaraguan"]},{"l":"Crowned Heads Azul y Oro","w":"Ecuador Habano","o":"","bn":"","fi":[]},{"l":"Crowned Heads Four Kicks","w":"Ecuador Habano","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Crowned Heads Four Kicks Capa Especial","w":"Ecuador Sumatra","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Crowned Heads Four Kicks Maduro","w":"Habano Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Crowned Heads Four Kicks Mule Kick LE 2023","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Crowned Heads J Juarez","w":"San Andres","o":"Nicaragua","bn":"Ecuador","fi":["Dominican","Nicaraguan"]},{"l":"Crowned Heads J.D. Howard Reserve","w":"Brazilian","o":"Dominican","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"Crowned Heads Jericho Hill","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Crowned Heads La Imperiosa","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Crowned Heads Le Careme","w":"Connecticut Broadleaf","o":"Dominican","bn":"Ecuador","fi":["Nicaraguan"]},{"l":"Crowned Heads Le Patissier","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Costa Rican","fi":["Nicaraguan"]},{"l":"Crowned Heads Mil Dias","w":"Ecuador Habano","o":"Nicaragua","bn":"Costa Rican","fi":["Nicaraguan"]},{"l":"Cu-Avana Punisher","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Cuba Aliados Original Blend","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Cuba Libre","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Honduran"]},{"l":"Cuba Libre One","w":"Habano","o":"Nicaragua","bn":"Costa Rica","fi":["Honduran","Nicaraguan"]},{"l":"Cuban Classics Doble Capa","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Cuban Delights","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Cuban Honeys","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"Cuban Rounds Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Cuban Rounds Maduro","w":"Maduro","o":"Dominican","bn":"","fi":[]},{"l":"Cuban Rounds Natural","w":"Habano","o":"Dominican","bn":"Nicaraguan","fi":[]},{"l":"Cuesta-Rey Centenario","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Cuesta-Rey Centro Fino","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Cusano 18 Natural and Maduro","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Daniel Marshall Gold Torpedo 2012","w":"Habano","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Daniel Marshall Red Label","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Dark Shark","w":"Connecticut Broadleaf","o":"Honduras","bn":"Nicaraguan","fi":[]},{"l":"Davidoff Aniversario Series","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Davidoff Anniversario No. 1 LE 2023","w":"Ecuador Connecticut","o":"Dominican","bn":"Ecuador","fi":["Dominican"]},{"l":"Davidoff Cigarillos","w":"Sumatra","o":"Dominican","bn":"","fi":["Dominican"]},{"l":"Davidoff Colorado Claro","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Davidoff Escurio","w":"Ecuador Habano","o":"Dominican","bn":"Brazil","fi":["Brazilian","Dominican"]},{"l":"Davidoff Grand Cru","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Davidoff Millennium Blend","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Davidoff Nicaragua","w":"Nicaraguan","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Davidoff Primeros","w":"Ecuador Connecticut","o":"Dominican","bn":"Brazilian","fi":["Dominican"]},{"l":"Davidoff Royal","w":"Dominican","o":"Dominican","bn":"","fi":[]},{"l":"Davidoff Signature Series","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Davidoff Winston Churchill","w":"Ecuador Habano","o":"Dominican","bn":"Mexican","fi":["Dominican","Nicaraguan"]},{"l":"Davidoff Winston Churchill The Late Hour","w":"Ecuador","o":"Dominican","bn":"Mexican","fi":["Dominican","Nicaraguan"]},{"l":"Davidoff Yamasa","w":"Dominican","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"De Nobili by Avanti","w":"Kentucky Fire-Cured","o":"United States","bn":"United States","fi":[]},{"l":"Diamond Crown","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Diamond Crown Julius Caeser","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Diamond Crown Maximus","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Diesel","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Diesel d.10th","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Disciple","w":"San Andres","o":"Nicaragua","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"Diesel Esteli Puro","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Heart of Darkness","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Rage","w":"Habano Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Uncut","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Uncut d.CT","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Diesel Unlimited","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Mexican","Nicaraguan"]},{"l":"Diesel Unlimited Maduro","w":"Maduro","o":"Nicaragua","bn":"Mexican","fi":["Honduran","Nicaraguan"]},{"l":"Diesel Whiskey Row","w":"Ecuador Habano","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Diesel Whiskey Row Founder's Collection","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Diesel Whiskey Row Sherry Cask","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Diesel Wicked","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Djarum Bali Hai","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Black","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Black Emerald","w":"HTL","o":"","bn":"","fi":[]},{"l":"Djarum Black Ivory","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Black Ruby","w":"HTL","o":"Bahamas","bn":"","fi":[]},{"l":"Djarum Black Sapphire","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Black Silver","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Select","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Special","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Djarum Splash","w":"HTL","o":"Indonesia","bn":"","fi":[]},{"l":"Dominican Cream","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Don Diego","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Don Felix","w":"Dominican","o":"Dominican","bn":"Dominican","fi":["Dominican","Varied"]},{"l":"Don Jesus","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Don Lino Africa","w":"Ecuador Habano","o":"Nicaragua","bn":"Cameroon","fi":["Dominican","Nicaraguan"]},{"l":"Don Lino Habanitos","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Don Pepin Garcia Blue","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Don Pepin Garcia Cuban Classic","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Don Pepin Garcia Series JJ","w":"Corojo","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"Don Pepin Garcia Vegas Cubanas","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Don Rafael Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Don Rafael Gold","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Don Rafael Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Don Rafael Nicaragua","w":"Habano","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Don Rafael Signature","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Don Reynaldo by Warped","w":"Corojo","o":"United States","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Don Smith","w":"Ecuador Sumatra","o":"Dominican","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Don Tomas Clasico Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Don Tomas Clasico Natural","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Don Tomas Sungrown","w":"Sun Grown","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Double Happiness Cazadores","w":"Connecticut","o":"Philippines","bn":"Habano","fi":["Nicaraguan"]},{"l":"Drew Estate 20 Acre Farm","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan","United States"]},{"l":"Drew Estate Blackened M81","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Pennsylvania"]},{"l":"Drew Estate Blackened S84 Shade to Black","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan","Pennsylvania"]},{"l":"Drew Estate Chateau Real Connecticut Shade","w":"Connecticut","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Drew Estate Deadwood Girl With No Name","w":"Maduro","o":"Nicaragua","bn":"Undisclosed","fi":[]},{"l":"Drew Estate Deadwood Tobacco Co.","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Deadwood Tobacco Fat Bottom Betty","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Deadwood Tobacco Leather Rose","w":"Brazilian","o":"Nicaragua","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Drew Estate Factory Smokes Cigarillos","w":"Connecticut","o":"Nicaragua","bn":"Indonesian","fi":[]},{"l":"Drew Estate Factory Smokes Connecticut Shade","w":"Connecticut","o":"Nicaragua","bn":"Indonesian","fi":["Indonesian"]},{"l":"Drew Estate Factory Smokes Maduro","w":"Maduro","o":"Nicaragua","bn":"Indonesian","fi":["Indonesian"]},{"l":"Drew Estate Factory Smokes Sun Grown","w":"Sun Grown","o":"Nicaragua","bn":"Indonesian","fi":["Indonesian"]},{"l":"Drew Estate Factory Smokes Sweets","w":"Habano","o":"Nicaragua","bn":"Indonesian","fi":["Indonesian"]},{"l":"Drew Estate Herrera Esteli Brazilian Maduro","w":"Brazilian","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Drew Estate Herrera Esteli Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Drew Estate Herrera Esteli Miami","w":"Ecuador Habano","o":"United States","bn":"Sumatra","fi":["Dominican","Nicaraguan"]},{"l":"Drew Estate Herrera Esteli Norteno","w":"Maduro","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Drew Estate Isla del Sol","w":"Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Isla del Sol Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Kentucky Fire Cured Swamp Rat & Swamp Thang","w":"Kentucky Fire-Cured","o":"Nicaragua","bn":"Kentucky Fire-Cured","fi":["Nicaraguan"]},{"l":"Drew Estate Liga Privada H99","w":"Connecticut","o":"Nicaragua","bn":"San Andres","fi":["Honduran","Nicaraguan"]},{"l":"Drew Estate Liga Privada No. 9","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Brazil","fi":["Honduran","Nicaraguan"]},{"l":"Drew Estate Liga Privada T52","w":"Connecticut","o":"Nicaragua","bn":"Brazil","fi":["Honduran","Nicaraguan"]},{"l":"Drew Estate Liga Privada Unico Series","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Brazil","fi":["Honduran","Nicaraguan"]},{"l":"Drew Estate MUWAT Kentucky Fire Cured","w":"Kentucky Fire-Cured","o":"Nicaragua","bn":"Kentucky Fire-Cured","fi":["Nicaraguan"]},{"l":"Drew Estate MUWAT Kentucky Fire Cured Sweets","w":"San Andres","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Kentucky Fire-Cured","Nicaraguan"]},{"l":"Drew Estate Nica Rustica Broadleaf","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Drew Estate Tabak Especial","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Tabak Especial Limited Red Eye","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Tabak Especial Ltd. Cafe Con Leche","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Drew Estate Undercrown 10","w":"San Andres","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Drew Estate Undercrown Maduro","w":"Maduro","o":"Nicaragua","bn":"Connecticut","fi":["Brazilian","Nicaraguan"]},{"l":"Drew Estate Undercrown Shade","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Sumatra","fi":["Dominican","Nicaraguan"]},{"l":"Drew Estate Undercrown Sun Grown","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Connecticut","fi":["Nicaraguan"]},{"l":"Dunbarton Mi Querida","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Dunbarton Mi Querida Black","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"San Andres","fi":["Dominican","Honduran"]},{"l":"Dunbarton Mi Querida Triqui Traca","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Dunbarton Muestra de Saka Exclusivo","w":"Ecuador Habano","o":"Nicaragua","bn":"Varied","fi":["Varied"]},{"l":"Dunbarton Muestra de Saka Nacatamale","w":"Ecuador Habano","o":"Nicaragua","bn":"Varied","fi":["Varied"]},{"l":"Dunbarton Muestra de Saka Unicorn","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"San Andres","fi":["Nicaraguan","Varied"]},{"l":"Dunbarton Muestra de Saka Unstolen Valor","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan","Varied"]},{"l":"Dunbarton Red Meat Lovers","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"San Andres","fi":["Nicaraguan","United States"]},{"l":"Dunbarton Sin Compromiso","w":"San Andres","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Dunbarton Sobremesa","w":"Ecuador Habano","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan","United States"]},{"l":"Dunbarton Sobremesa Brulee","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Dunbarton Stillwell Star","w":"Ecuador Habano","o":"Nicaragua","bn":"San Andres","fi":["Varied"]},{"l":"Dunbarton Umbagog","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Duque","w":"Sumatra","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Dutch Masters","w":"Indonesian","o":"United States","bn":"","fi":[]},{"l":"E.H. Taylor Cigars","w":"Corojo","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"E.P. Carillo Short Run 2023","w":"Ecuador Habano","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"E.P. Carrillo Allegiance","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"E.P. Carrillo Encore","w":"Nicaraguan","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"E.P. Carrillo INCH Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"E.P. Carrillo INCH Natural","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"E.P. Carrillo Inch Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"E.P. Carrillo La Historia","w":"Maduro","o":"Dominican","bn":"Ecuador","fi":["Dominican","Nicaraguan"]},{"l":"E.P. Carrillo New Wave","w":"Ecuador Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"E.P. Carrillo Pledge","w":"Habano Connecticut","o":"Dominican","bn":"Ecuador","fi":["Nicaraguan"]},{"l":"Eagle Rare Special Release","w":"Ecuador Connecticut","o":"Dominican","bn":"Mexican","fi":["Brazilian","Dominican"]},{"l":"Edition One Cloud Hopper","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Eiroa by Christian Eiroa","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Eiroa CBT Maduro","w":"Maduro","o":"Honduras","bn":"","fi":[]},{"l":"Eiroa the First 20 Years","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Eiroa: The First 20 Years Colorado","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"El Baton","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"El Mejor Espresso","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"El Rey Del Mundo","w":"Oscuro","o":"Honduras","bn":"Dominican","fi":["Honduran"]},{"l":"El Rey del Mundo Naturals","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"El Rey del Mundo Shade Grown","w":"Honduran Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"El Rico Habano","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Erin Go Bragh","w":"Connecticut","o":"Europe","bn":"Dominican","fi":["Dominican"]},{"l":"Erin Go Bragh Cigarillos","w":"Indonesian","o":"Europe","bn":"Dominican","fi":["Dominican"]},{"l":"Erin Go Bragh St. Patrick's Day Edition","w":"Indonesian","o":"Europe","bn":"Dominican","fi":["Dominican"]},{"l":"Espinosa Comfortably Numb Vol. 1","w":"Ecuador Habano","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"Espinosa Comfortably Numb Vol. 2","w":"Maduro","o":"Nicaragua","bn":"","fi":[]},{"l":"Espinosa Comfortably Numb Vol. 3","w":"Habano","o":"Nicaragua","bn":"San Andres","fi":["Nicaraguan"]},{"l":"Espinosa Crema","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Knuckle Sandwich Connecticut","w":"Connecticut","o":"","bn":"","fi":[]},{"l":"Espinosa Knuckle Sandwich Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Espinosa Knuckle Sandwich Maduro","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Espinosa Laranja Reserva","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Laranja Reserva Azulejo","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Brazil","fi":["African","Nicaraguan"]},{"l":"Espinosa Laranja Reserva Escuro","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Las 6 Provincias CMW","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Las 6 Provincias ZDT","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Murcielago","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Espinosa Wasabi","w":"Candela","o":"Nicaragua","bn":"","fi":[]},{"l":"Evelio","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Factory Throwouts","w":"Ecuador Sungrown","o":"United States","bn":"Dominican","fi":["Honduran"]},{"l":"Ferio Tego Metropolitan Connecticut","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ferio Tego Metropolitan Host","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Ferio Tego Metropolitan Host Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Ferio Tego Timeless Supreme Cigars","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Fields of Gold","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Fighting Cock","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Fireball Cinnamon Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Flor de las Antillas Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Flor de Oliva Gold","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Flor de Oliva Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Flor del Todo","w":"Ecuador Habano","o":"Honduras","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Foundation Aksum Maduro","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Foundation Charter Oak","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"Foundation Charter Oak Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Foundation El Gueguense","w":"Corojo","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"Foundation Highclere Castle","w":"Connecticut","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Foundation Highclere Castle Victorian","w":"Ecuador Habano","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Foundation Olmec Maduro and Claro","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Foundation The Tabernacle","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Mexican","fi":["Honduran","Nicaraguan"]},{"l":"Foundation The Tabernacle Havana Seed CT #142","w":"Connecticut","o":"Nicaragua","bn":"Mexican","fi":["Honduran","Nicaraguan"]},{"l":"Foundation The Tabernacle Knight Commander","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Foundation The Wise Man Maduro","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Fratello Arlequin","w":"Mexican","o":"Nicaragua","bn":"Ecuador","fi":["Nicaraguan","Peruvian"]},{"l":"Fratello Classico","w":"Habano","o":"Nicaragua","bn":"Ecuador","fi":["Nicaraguan","Peruvian"]},{"l":"Fratello Oro","w":"Ecuador Connecticut","o":"Dominican","bn":"Cameroon","fi":["Colombian","Dominican"]},{"l":"Fratello Sorella","w":"Ecuador Habano","o":"Nicaragua","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"Free Cuba","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Fuente Fuente OpusX Lost City","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Game Cigars by Garcia y Vega","w":"Sumatra","o":"United States","bn":"","fi":[]},{"l":"Game Leaf by Garcia y Vega","w":"Sumatra","o":"United States","bn":"","fi":[]},{"l":"Garcia y Vega Cigars","w":"Candela","o":"Dominican","bn":"","fi":[]},{"l":"General Grant","w":"Sumatra","o":"Dominican","bn":"","fi":[]},{"l":"Gerant's Golden Siesta","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gilberto Oliva Reserva","w":"Indonesian","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Gilberto Oliva Reserva Blanc","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Gilberto Oliva Reserva Noir","w":"Honduran","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Gispert","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"God of Fire by Carlito","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"God of Fire by Don Carlos","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"God of Fire Serie Aniversario","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":[]},{"l":"God of Fire Serie B","w":"Ecuador Sungrown","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Good Times Black Tipped Cigarillos","w":"HTL","o":"United States","bn":"","fi":[]},{"l":"Good Times Cigarillos","w":"HTL","o":"Dominican","bn":"","fi":[]},{"l":"Good Times Country Man","w":"Maduro","o":"Dominican","bn":"","fi":[]},{"l":"Good Times Sweet Woods","w":"Connecticut Broadleaf","o":"Dominican","bn":"","fi":[]},{"l":"Gran Habano #1 Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Gran Habano #3 Habano","w":"Habano","o":"Honduras","bn":"Costa Rican","fi":["Mexican"]},{"l":"Gran Habano #5 Corojo","w":"Corojo","o":"Honduras","bn":"Costa Rican","fi":["Mexican"]},{"l":"Gran Habano #5 Corojo Maduro","w":"Corojo","o":"Honduras","bn":"Costa Rica","fi":["Costa Rican","Nicaraguan"]},{"l":"Gran Habano Minis","w":"Corojo","o":"Honduras","bn":"Costa Rican","fi":["Mexican"]},{"l":"Gran Habano Vintage Connecticut 2004","w":"Connecticut","o":"Honduras","bn":"","fi":[]},{"l":"Gran Habano Vintage Corojo 2002","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Gran Habano Vintage Habano 2006","w":"Habano","o":"Honduras","bn":"Costa Rican","fi":["Mexican"]},{"l":"Graycliff 10 Year Vintage Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Graycliff 1666","w":"Maduro","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Graycliff Double Espresso Series","w":"Pennsylvania Broadleaf","o":"Honduras","bn":"Sumatra","fi":["Dominican","Honduran"]},{"l":"Graycliff G2","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Graycliff G2 Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Graycliff G2 Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Graycliff Profesionale Series","w":"Ecuador Sumatra","o":"Honduras","bn":"Sumatra","fi":["Brazilian","Dominican"]},{"l":"Graycliff Turbo Edicion Limitada","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Graycliff West Hill St","w":"Ecuador Habano","o":"Nicaragua","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"Guardian of the Farm","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Guardian of the Farm Cerberus","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Guardian of the Farm Nightwatch","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Gurkha 125th Anniversary","w":"Brazilian","o":"Dominican","bn":"Habano","fi":["Brazilian","Dominican"]},{"l":"Gurkha Archive","w":"Connecticut","o":"Dominican","bn":"Cameroon","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Beast","w":"Costa Rican","o":"Costa Rica","bn":"Dominican","fi":["Colombian","Dominican"]},{"l":"Gurkha Beauty","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Black Dragon","w":"Connecticut Broadleaf","o":"Honduras","bn":"Cameroon","fi":["Dominican"]},{"l":"Gurkha Black Ops Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Black Ops Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Black Ops Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Bourbon Collection","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Cellar Reserve","w":"Criollo '98","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Cellar Reserve Edicion Especial","w":"Corojo","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Cellar Reserve Limitada","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Gurkha Centurian Double Perfecto","w":"Connecticut","o":"Dominican","bn":"Cameroon","fi":["Dominican"]},{"l":"Gurkha Chairman's Select","w":"Criollo '98","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Class Regent","w":"Habano","o":"","bn":"","fi":[]},{"l":"Gurkha Classic Havana","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Crest","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Evil","w":"Brazilian","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Gurkha Ghost","w":"Brazilian","o":"Dominican","bn":"Criollo","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Ghost Gold","w":"Ecuador Habano","o":"Dominican","bn":"Mexican","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Governor's Private Blend","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Colombian"]},{"l":"Gurkha Grand Age","w":"Cameroon","o":"Honduras","bn":"Dominican","fi":[]},{"l":"Gurkha Grand Reserve","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Hudson Bay","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Gurkha Legend Vintage 2001","w":"Connecticut Broadleaf","o":"Dominican","bn":"Cameroon","fi":["Dominican"]},{"l":"Gurkha Master Select","w":"Habano","o":"Nicaragua","bn":"San Andres","fi":["Dominican","Honduran"]},{"l":"Gurkha Nicaragua Series","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Omen","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Gurkha Park Avenue","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Park Avenue Habano","w":"Habano","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Gurkha Park Avenue Maduro","w":"Habano Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Gurkha Private Reserve","w":"Maduro","o":"Dominican","bn":"","fi":[]},{"l":"Gurkha Prize Fighter","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Gurkha Sherpa Black","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Gurkha Sherpa Orange","w":"Habano","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Gurkha Signature 1887","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Peruvian"]},{"l":"Gurkha Status","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Gurkha Symphony","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Gurkha The Royal Reserve","w":"Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Gurkha Titan","w":"Costa Rican","o":"Honduras","bn":"Nicaraguan","fi":["Colombian","Dominican"]},{"l":"Gurkha Widow Maker","w":"Connecticut Broadleaf","o":"Dominican","bn":"Cameroon","fi":["Dominican"]},{"l":"Gurkha Yakuza","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"H Upmann 1844 Classic","w":"Connecticut","o":"Honduras","bn":"Honduran Broadleaf","fi":["Honduran"]},{"l":"H. Upmann 1844 Anejo","w":"Ecuador Habano","o":"Honduras","bn":"Pennsylvania Broadleaf","fi":["Dominican","Honduran"]},{"l":"H. Upmann 1844 Reserve","w":"Ecuador Habano","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"H. Upmann 1884 Special Edition Barbier","w":"Connecticut","o":"Dominican","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"H. Upmann by AJ Fernandez","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"H. Upmann Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"H. Upmann Herman's Batch","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"H. Upmann Nicaragua AJ Fernandez Heritage","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"H. Upmann The Banker","w":"Ecuador Habano","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Hav-A-Tampa Jewels","w":"HTL","o":"United States","bn":"","fi":[]},{"l":"Havana Classico","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Havana Cream","w":"Habano","o":"Nicaragua","bn":"","fi":[]},{"l":"Havana Q by Quorum","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HC Series Black Maduro","w":"Connecticut","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"HC Series Blue Barber Pole","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HC Series Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Sumatra","fi":["Costa Rican","Mexican"]},{"l":"HC Series Criollo","w":"Criollo","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"HC Series Habano Colorado","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Costa Rican","Honduran"]},{"l":"HC Series Red Corojo","w":"Corojo","o":"Honduras","bn":"","fi":[]},{"l":"HC Series White Shade Grown","w":"Connecticut","o":"Honduras","bn":"Nicaraguan","fi":[]},{"l":"Helix","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Brazilian","Dominican"]},{"l":"Henry Clay","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Henry Clay War Hawk","w":"Ecuador Connecticut","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Honduran"]},{"l":"Hesitant Pirate","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Honey Bourbon Backwoods Cigars","w":"Indonesian","o":"United States","bn":"Dominican","fi":[]},{"l":"Hoyo de Monterrey","w":"Connecticut Broadleaf","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Hoyo de Monterrey Epicure Seleccion","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Hoyo De Monterrey Excalibur","w":"Connecticut","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Hoyo De Monterrey Excalibur Black","w":"Connecticut Broadleaf","o":"Honduras","bn":"Ecuador","fi":[]},{"l":"Hoyo De Monterrey Excalibur Black Cigarillos","w":"Brazilian","o":"Honduras","bn":"Brazil","fi":["Brazilian","Dominican"]},{"l":"Hoyo De Monterrey Excalibur Cameroon","w":"Cameroon","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Hoyo de Monterrey Excalibur Cigarillos","w":"Connecticut","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Hoyo De Monterrey Excalibur Dark Knight","w":"Connecticut Broadleaf","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican"]},{"l":"Hoyo de Tradicion","w":"Habano","o":"Honduras","bn":"Habano","fi":["Dominican","Honduran"]},{"l":"Hoyo La Amistad Black","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Hoyo La Amistad Dark Sumatra","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Hoyo La Amistad Gold","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC 10th anniversary","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC 500th Anniversary","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"HVC Black Friday 2023","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC Cerro Natural","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC Edicion Especial 2015","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC Hot Cake Golden Line","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"HVC Hot Cakes","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"HVC Pan Caliente","w":"Criollo '98","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Candela","w":"Candela","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Cigares Prive Corojo","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Cigars Prive SA Maduro","w":"San Andres","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Cruzado","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione ECCJ","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Epernay Serie 2009","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Epernay Serie 2009 10th Anniversary","w":"Nicaraguan","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Illusione Fume D'Amour","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Garagiste","w":"Ecuador Habano","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Gigantes","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"Illusione Haut 10","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Maduro","w":"San Andres","o":"Honduras","bn":"Nicaraguan","fi":[]},{"l":"Illusione OneOff","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Original Documents","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Rothchildes","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Singulare","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Illusione Slam Bench Pressed","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Illusione Ultra","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Island Jim by Oscar #2","w":"Nicaraguan Jalapa","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Jaime Garcia Reserva Especial","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Ecuador","fi":["Nicaraguan"]},{"l":"Java by Drew Estate","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Java Mint by Drew Estate","w":"Brazilian","o":"Nicaragua","bn":"","fi":[]},{"l":"Java Red by Drew Estate","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JFR Lunatic Habano","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JFR Lunatic Loco","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JFR Lunatic Maduro","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JFR XT Corojo","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JFR XT Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"JM's Dominican","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"JM's Dominican Honey","w":"Sumatra","o":"Dominican","bn":"Dominican","fi":[]},{"l":"John Bull","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Antano 1970","w":"Criollo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Joya de Nicaragua Antano Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Antano Dark Corojo","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Joya de Nicaragua Antano Gran Reserva","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Black","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Cabinetta","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Joya De Nicaragua Cinco de Cinco","w":"Mexican","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Cinco Decadas","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["No"]},{"l":"Joya de Nicaragua Cuatro Cinco","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua JOYA Red","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Joya de Nicaragua Numero Uno","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Joya de Nicaragua Silver","w":"Ecuador Habano","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Joya del Jefe 2-Fer","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"Judge Wright by JC Newman","w":"Ecuador Sungrown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Kentucky Cheroots","w":"Kentucky Fire-Cured","o":"United States","bn":"","fi":[]},{"l":"Kristoff Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"Kristoff Criollo","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Kristoff GC Signature Series","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican","Honduran"]},{"l":"Kristoff Kristania","w":"Criollo","o":"Dominican","bn":"African","fi":["Dominican"]},{"l":"Kristoff Kristania Maduro","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Kristoff Ligero Maduro","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican","Honduran"]},{"l":"Kristoff Maduro","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Kristoff San Andres","w":"San Andres","o":"Dominican","bn":"Habano","fi":["Nicaraguan"]},{"l":"Kristoff Sumatra","w":"Ecuador Sumatra","o":"Dominican","bn":"Brazil","fi":["Dominican","Nicaraguan"]},{"l":"Kristoff Tres Compadres","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"L'Atelier","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"L'Atelier Surrogates","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aroma de Cuba","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aroma de Cuba Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aroma de Cuba Edicion Especial","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aroma de Cuba Mi Amor","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Aroma de Cuba Pasion","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aroma de Cuba Reserva","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aurora 107","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"La Aurora 107 Maduro","w":"Maduro","o":"Dominican","bn":"","fi":[]},{"l":"La Aurora 107 Nicaragua","w":"Nicaraguan","o":"Dominican","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Aurora 1495 Series","w":"Ecuador Habano","o":"Dominican","bn":"Corojo","fi":["Dominican","Nicaraguan"]},{"l":"La Aurora 1987 Connecticut","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"La Aurora Preferidos Diamond","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":[]},{"l":"La Aurora Preferidos Emerald","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Aurora Preferidos Gold","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Aurora Preferidos Platinum","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Aurora Preferidos Ruby","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Aurora Preferidos Sapphire","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Aurora Principes","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":[]},{"l":"La Barba Purple","w":"Habano","o":"Dominican","bn":"","fi":[]},{"l":"La Barba Red","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Barba Ricochet","w":"San Andres","o":"Dominican","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"La Barba Ricochet Cru Mexi-Sol","w":"San Andres","o":"Dominican","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"La Diferencia Cubana","w":"Sun Grown","o":"Dominican","bn":"Dominican","fi":[]},{"l":"La Estrella Cubana Connecticut","w":"Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"La Estrella Cubana Habano","w":"Habano","o":"Nicaragua","bn":"","fi":[]},{"l":"La Flor Dominicana 1994","w":"San Andres","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Air Bender","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Andalusian Bull","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Cameroon Cabinet","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"La Flor Dominicana Coronado","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Double Claro","w":"Candela","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"La Flor Dominicana Double Ligero","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Double Ligero Maduro","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana La Volcada","w":"San Andres","o":"Dominican","bn":"Corojo","fi":["Dominican"]},{"l":"La Flor Dominicana Ligero","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Flor Dominicana Ligero Cabinet","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":[]},{"l":"La Flor Dominicana Reserva Especial","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Brazilian","Dominican"]},{"l":"La Galera 1936 Box Pressed","w":"Habano","o":"Dominican","bn":"Criollo '98","fi":["Dominican"]},{"l":"La Galera Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Varied"]},{"l":"La Galera Habano","w":"Ecuador Habano","o":"Dominican","bn":"Corojo","fi":["Dominican"]},{"l":"La Galera Maduro","w":"San Andres","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"La Gloria Cubana","w":"Connecticut Broadleaf","o":"Dominican","bn":"Nicaraguan","fi":["Brazilian","Dominican"]},{"l":"La Gloria Cubana Esteli","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Honduran","fi":["Honduran"]},{"l":"La Gloria Cubana Medio Tiempo","w":"Ecuador Sumatra","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Connecticut","Dominican"]},{"l":"La Gloria Cubana Serie R","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"La Gloria Cubana Serie R Black","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Gloria Cubana Serie R Black Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Gloria Cubana Serie R Esteli","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Gloria Cubana Serie R Esteli Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Gloria Cubana Serie S","w":"San Andres","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"La Gloria Cubana Serie S Maduro","w":"Maduro","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"La Gloria Cubana Spanish Press","w":"Nicaraguan Jalapa","o":"Dominican","bn":"Mexican","fi":["Brazilian","Dominican"]},{"l":"La Herencia Cubana","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Herencia Cubana CORE","w":"Ecuador Habano","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan","United States"]},{"l":"La Herencia Cubana Oscuro Fuerte","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Mission du L'Atelier","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Palina 125 Anos","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Palina 1948","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Palina Black Label","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"La Palina Blue Label","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"La Palina Bronze Label","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"La Palina Classic Connecticut","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"La Palina Classic Maduro","w":"Honduran","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"La Palina Classic Natural","w":"Habano Oscuro","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"La Palina Classic Rosado","w":"Honduran","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"La Palina El Diario","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"La Palina Fuego Verde","w":"Candela","o":"Dominican","bn":"Honduran","fi":["Nicaraguan"]},{"l":"La Palina KB Series","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"La Palina Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Brazil","fi":[]},{"l":"La Palina Red Label","w":"Ecuador Habano","o":"Dominican","bn":"Ecuador","fi":["Dominican","Nicaraguan"]},{"l":"La Perla Habana 1515","w":"Ecuador Habano","o":"Nicaragua","bn":"Sumatra","fi":["Nicaraguan"]},{"l":"La Perla Habana Black & Tan","w":"Sumatra","o":"Ireland","bn":"","fi":[]},{"l":"La Perla Habana Black Pearl Morado","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"La Perla Habana Black Pearl Original","w":"Brazilian","o":"Nicaragua","bn":"Dominican","fi":["Mexican"]},{"l":"La Perla Habana Black Pearl Oro","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Perla Habana Black Pearl Rojo","w":"Criollo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"La Perla Habana Cazadores","w":"Criollo","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"La Perla Habana Cazadores Connecticut","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"La Perla Habana Classic","w":"Indonesian","o":"Nicaragua","bn":"Dominican","fi":["Honduran"]},{"l":"La Perla Habana Classic Cameroon","w":"Cameroon","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"La Perla Habana Classic Maduro","w":"Maduro","o":"Nicaragua","bn":"Dominican","fi":["Honduran"]},{"l":"La Perla Habana White Pearl","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Sumatra","fi":["Honduran","Nicaraguan"]},{"l":"La Perla Habana WIDE","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Honduran","fi":["Costa Rican","Honduran"]},{"l":"La Unica","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Latitude Zero","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Latitude Zero Los Rios","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Latitude Zero Signature","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Connecticut","Dominican"]},{"l":"Leaf By Oscar 10th Anniversary Criollo","w":"Criollo","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Leaf by Oscar Connecticut","w":"Honduran Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Leaf by Oscar Corojo","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Leaf by Oscar Maduro","w":"Nicaraguan Jalapa","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Leaf by Oscar Sumatra","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Los Statos Deluxe","w":"Ecuador Sumatra","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Los Statos Deluxe Maduro","w":"Maduro","o":"","bn":"","fi":[]},{"l":"M by Macanudo Bourbon","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Ecuador","fi":["Dominican"]},{"l":"M by Macanudo Coffee","w":"Indonesian","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"M by Macanudo Espresso","w":"Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"Macanudo 1968","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Macanudo Cafe","w":"Connecticut","o":"Dominican","bn":"Mexican","fi":["Dominican","Mexican"]},{"l":"Macanudo Cru Royale","w":"Ecuador Habano","o":"Dominican","bn":"Brazilian","fi":["Dominican"]},{"l":"Macanudo Gold Label","w":"Connecticut","o":"Dominican","bn":"San Andres","fi":["Dominican","Mexican"]},{"l":"Macanudo Inspirado Black","w":"Connecticut Broadleaf","o":"Dominican","bn":"Sumatra","fi":["Mexican","Nicaraguan"]},{"l":"Macanudo Inspirado Green","w":"Brazilian","o":"Dominican","bn":"Indonesian","fi":["Colombian","Dominican"]},{"l":"Macanudo Inspirado Orange","w":"Honduran","o":"Honduras","bn":"Dominican","fi":["Honduran"]},{"l":"Macanudo Inspirado Red","w":"Ecuador Habano","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Macanudo Inspirado White","w":"Ecuador Connecticut","o":"Honduras","bn":"Indonesian","fi":["Mexican","Nicaraguan"]},{"l":"Macanudo Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Mexican"]},{"l":"Macanudo Vintage 2006","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Macanudo Vintage 2010","w":"Connecticut","o":"Dominican","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Macanudo Vintage 2013","w":"Connecticut Broadleaf","o":"","bn":"","fi":[]},{"l":"Macanudo Vintage Maduro 1997","w":"Connecticut Broadleaf","o":"Dominican","bn":"Brazilian","fi":["Dominican"]},{"l":"Made Man","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Magellan Dominicans","w":"Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"Maker's Choice","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Man O' War","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Man O' War Abomination","w":"San Andres","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Man O' War Damnation","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Man O' War Dark Aged Maduro","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan","United States"]},{"l":"Man O' War Dark Horse","w":"Maduro","o":"Nicaragua","bn":"Habano","fi":["Brazilian","Nicaraguan"]},{"l":"Man O' War Puro Authentico","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Man O' War Ruination","w":"Ecuador Sungrown","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Man O' War Ruination 10th Anniversary","w":"Ecuador Sungrown","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Man O' War Side Projects","w":"Habano","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Man O' War Valkyrie","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Man O' War Virtue","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Man O' War Virtue 10th Anniversary","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Mark Twain","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Mark Twain Memoir","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Mark Twain Novellas","w":"Connecticut","o":"Dominican","bn":"Mexican","fi":["Dominican","Mexican"]},{"l":"Mark Twain Riverboat","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Mark Twain Rough Drafts","w":"Habano","o":"Nicaragua","bn":"Mexican","fi":[]},{"l":"Mark Twain The Press","w":"Ecuador Sumatra","o":"Dominican","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Menace by Black Crown","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Dominican","fi":["African","Dominican"]},{"l":"MISTAKES","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Dominican","fi":[]},{"l":"Monte Epic Vintage 12","w":"Ecuador Sumatra","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Montecristo 1935 Anniversary Edicion Doble Diamante","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Montecristo 1935 Anniversary Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Montecristo 1935 Edicion Diamante","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Montecristo Classic","w":"Connecticut","o":"Dominican","bn":"Brazil","fi":["African","Dominican"]},{"l":"Montecristo Crafted By AJ Fernandez","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Mexican","fi":["Honduran","Nicaraguan"]},{"l":"Montecristo Epic","w":"Ecuador Habano","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Montecristo Espada","w":"Criollo '98","o":"Nicaragua","bn":"Criollo '98","fi":["Colombian","Dominican"]},{"l":"Montecristo Espada Oscuro","w":"Habano Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Montecristo Media Noche","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Montecristo Memories (Cigarillos)","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Montecristo Monte","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Montecristo Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Montecristo Original","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Montecristo Perlado","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Montecristo Platinum","w":"Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Montecristo White Label","w":"Ecuador Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Montesino","w":"Connecticut Broadleaf","o":"Dominican","bn":"Nicaraguan","fi":["Dominican"]},{"l":"My Father","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"My Father El Centurion","w":"Criollo '98","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father Flor de Las Antillas","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father Fonseca","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father La Antiguedad","w":"Ecuador Habano","o":"Nicaragua","bn":"Corojo","fi":["Nicaraguan"]},{"l":"My Father La Gran Oferta","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father La Opulencia","w":"Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father La Promesa","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father Le Bijou 1922","w":"Habano Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"My Father The Judge","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nestor Miranda Special Selection","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nestor Reserve Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"New Cuba","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"New Cuba Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"New Cuba Fuerte","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"New Cuba Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"New Cuba Superior Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nica Libre","w":"Maduro","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Nica Libre AGANORSA","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nica Libre Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nica Libre Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nica Libre Silver 25th Anniversary","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nica Libre Sun Grown","w":"Habano","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Nica Rustica Adobe","w":"Habano","o":"Nicaragua","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Nicaragua Cream","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nub Cain FF by Oliva","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Nub Cameroon by Oliva","w":"Cameroon","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nub Connecticut by Oliva","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nub Double Maduro by Oliva","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nub Habano by Oliva","w":"Ecuador Habano","o":"Nicaragua","bn":"","fi":[]},{"l":"Nub Habano Sun Grown Double Perfecto","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nub Maduro by Oliva","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Nub Nuance by Oliva","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Nub Sumatra by Oliva","w":"Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Obsidian","w":"Brazilian","o":"Dominican","bn":"Criollo '98","fi":["Dominican","Nicaraguan"]},{"l":"Obsidian White Noise","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Odyssey Coffee","w":"Indonesian","o":"Nicaragua","bn":"Indonesian","fi":["Indonesian","Nicaraguan"]},{"l":"Odyssey Connecticut","w":"Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"Odyssey Full","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"","fi":["Nicaraguan"]},{"l":"Odyssey Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Odyssey Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Odyssey Sweet Tip","w":"Habano","o":"Nicaragua","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Ole Shenandoah Cheroots","w":"Maduro","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Oliva Connecticut Reserve","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Flor de Oliva","w":"Sumatra","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Oliva Master Blends 3","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Oliva Saison","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Saison Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie G","w":"Cameroon","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Oliva Serie G Maduro","w":"Mexican","o":"Nicaragua","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Oliva Serie O","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Oliva Serie O Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Oliva Serie V","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Oliva Serie V 135th Anniversary Edicion Limitada","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie V Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie V Melanio","w":"Ecuador","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie V Melanio Edicion Ano 2023 Figurino","w":"Ecuador","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie V Melanio Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Oliva Serie V Nub","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Omar Ortez Maduro","w":"Maduro","o":"Honduras","bn":"Mexican","fi":["Nicaraguan","Panamanian"]},{"l":"Omar Ortez Originals","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Onyx Bold Nicaragua","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Onyx Vintage Nicaragua","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Original Cubans","w":"Ecuador Sungrown","o":"Dominican","bn":"","fi":["Nicaraguan"]},{"l":"Oro Cubano Aniversario","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Ortega Cubao","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Oscar Valladares McFly","w":"San Andres","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Ozgener Bosphorus","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Padron 1926 Series 40th Anniversary","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron 1926 Series 80th Anniversary","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Padron 1926 Series Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron 1926 Series Natural","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron 1926 Series No. 90","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron 1964 Anniversary Series Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron 1964 Anniversary Series Natural","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron Damaso","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Padron Family Reserve","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Padron Natural","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Palma Real","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Palma Real Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Panter Small Cigars","w":"Ecuador Connecticut","o":"Europe","bn":"Habano","fi":["Nicaraguan"]},{"l":"Panter Specialty Small Cigars","w":"Sumatra","o":"Europe","bn":"Habano","fi":["Nicaraguan"]},{"l":"Parodi by Avanti","w":"Kentucky Fire-Cured","o":"United States","bn":"","fi":["United States"]},{"l":"Partagas","w":"Cameroon","o":"Dominican","bn":"Dominican","fi":["Mexican"]},{"l":"Partagas 1845 Clasico","w":"Ecuador Sumatra","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"Partagas 1845 Extra Fuerte","w":"Honduran","o":"Dominican","bn":"Habano","fi":["Dominican","Nicaraguan"]},{"l":"Partagas 1845 Extra Oscuro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Partagas Black Label","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Dominican","Nicaraguan"]},{"l":"Partagas Cifuentes","w":"Corojo","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Partagas Cifuentes Maduro","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Partagas Cortado","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Indonesian","fi":["Honduran","Mexican"]},{"l":"Partagas Heritage","w":"Honduran","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Partagas Legend","w":"Connecticut Broadleaf","o":"Dominican","bn":"Honduran","fi":["Dominican"]},{"l":"Partagas Valle Verde","w":"San Andres","o":"Honduras","bn":"Cameroon","fi":["Mexican","Nicaraguan"]},{"l":"Perdomo 20th Anniversary Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo 20th Anniversary Maduro","w":"Habano Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo 20th Anniversary Sun Grown","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo 30th Anniversary Box-Pressed Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo 30th Anniversary Box-Pressed Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo 30th Anniversary Box-Pressed Sun Grown","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Double Aged 12 Year Vintage Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"","fi":[]},{"l":"Perdomo Double Aged 12 Year Vintage Maduro","w":"Maduro","o":"Nicaragua","bn":"","fi":[]},{"l":"Perdomo Double Aged 12 Year Vintage Sun Grown","w":"Nicaraguan","o":"Nicaragua","bn":"","fi":[]},{"l":"Perdomo Fresco","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Fresh-Rolled Cuban Wheels","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Habano Bourbon Barrel-Aged Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Habano Bourbon Barrel-Aged Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Habano Bourbon Barrel-Aged Sun Grown","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Inmenso Seventy Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Inmenso Seventy Sun Grown","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Lot 23","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Lot 23 Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Lot 23 Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Reserve 10th Anniv. Champagne","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Reserve 10th Anniversary Box-Pressed Maduro","w":"Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Reserve 10th Anniversary Box-Pressed Sun-Grown","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perdomo Slow-Aged Lot 826 Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Slow-Aged Lot 826 Natural","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perdomo Slow-Aged Lot 826 Sun-Grown","w":"Sun Grown","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Perla del Mar Corojo","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perla del Mar Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Perla del Mar Shade","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Phillies","w":"HTL","o":"United States","bn":"","fi":[]},{"l":"Pistoff Kristoff","w":"San Andres","o":"Dominican","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Plasencia 1865 Alma Fuerte","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Plasencia 1865 Alma Fuerte Colorado","w":"Colorado","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Plasencia Alma del Campo","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Plasencia Alma del Fuego","w":"Nicaraguan Jalapa","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Plasencia Cosecha 149","w":"Honduran","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Plasencia Cosecha 151","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Plasencia Reserva Original","w":"Nicaraguan","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Project E San Andres by Epic Cigars","w":"San Andres","o":"Dominican","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"Protocol Official Misconduct","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Protocol Probable Cause","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Protocol Themis","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Punch Bareknuckle","w":"Ecuador Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Punch Cigarillos","w":"Ecuador Sumatra","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Ecuadorian"]},{"l":"Punch Clasico","w":"Connecticut Broadleaf","o":"Europe","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Punch Deluxe","w":"Connecticut Broadleaf","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Punch Diablo","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Honduran","Nicaraguan"]},{"l":"Punch Dragon Fire","w":"Mexican","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Punch Golden Era","w":"Corojo","o":"Honduras","bn":"Corojo","fi":["Honduran"]},{"l":"Punch Gran Puro","w":"Sun Grown","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Punch Gran Puro Nicaragua","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Punch Grand Cru","w":"Connecticut","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Punch Knuckle Buster","w":"Habano","o":"Honduras","bn":"Habano","fi":["Honduran","Nicaraguan"]},{"l":"Punch Knuckle Buster Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Indonesian","fi":["Nicaraguan"]},{"l":"Punch Rare Corojo","w":"Ecuador Sumatra","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Punch Signature","w":"Corojo","o":"Honduras","bn":"Connecticut","fi":["Dominican","Nicaraguan"]},{"l":"Puro Ambar Legacy","w":"Dominican","o":"Dominican","bn":"Criollo '98","fi":["Dominican"]},{"l":"Quesada Oktoberfest 2023","w":"Mexican","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Quorum","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Raji's Untimely Demise","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Ramon Bueso Genesis Connecticut","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Ramon Bueso Genesis Habano","w":"Ecuador Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Ramon Bueso Genesis Oscuro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Ramon Bueso Genesis The Project","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Ramon Bueso Olancho Vintage","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"REO","w":"Maduro","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Reposado '96","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rex Britannia","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Rocky Patel 15th Anniversary","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel ALR Second Edition","w":"San Andres","o":"Nicaragua","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Broadleaf","w":"Connecticut Broadleaf","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel Cargo","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Rocky Patel Catch 22","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Rocky Patel Connecticut","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel Conviction","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel Dark Star","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Honduran","Paraguyan"]},{"l":"Rocky Patel DBS (Double Broadleaf Selection)","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Decade Cigars","w":"Sumatra","o":"Honduras","bn":"Nicaraguan","fi":["Honduran"]},{"l":"Rocky Patel Disciple","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel Edge Square Corojo","w":"Corojo","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel Edge Square Maduro","w":"Maduro","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel Edicion Unico","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Rocky Patel Fifty-Five","w":"Nicaraguan","o":"Nicaragua","bn":"Costa Rica","fi":["Nicaraguan"]},{"l":"Rocky Patel Flor de San Andres","w":"San Andres","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel Flor de San Andres Black","w":"Maduro","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Rocky Patel Gold Label","w":"Ecuador Habano","o":"Nicaragua","bn":"Connecticut","fi":["Nicaraguan"]},{"l":"Rocky Patel Grand Reserve","w":"Ecuador","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Imperial","w":"Habano","o":"Honduras","bn":"","fi":[]},{"l":"Rocky Patel It's a Boy/Girl","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Rocky Patel ITC Emerald","w":"Candela","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Rocky Patel ITC Limited Reserve","w":"Ecuador Connecticut","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel ITC Super Fuerte Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Nicaraguan","fi":["Costa Rican","Honduran"]},{"l":"Rocky Patel ITC Super Fuerte Natural","w":"Costa Rican","o":"Honduras","bn":"Nicaraguan","fi":["Costa Rican","Honduran"]},{"l":"Rocky Patel LB1","w":"Ecuador Habano","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Number 6","w":"Honduran","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Puro Cubano by Hamlet","w":"Ecuador Habano","o":"Nicaragua","bn":"Pennsylvania Broadleaf","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel Quarter Century","w":"San Andres","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel Royal Vintage","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel Royale","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Connecticut","fi":["Nicaraguan"]},{"l":"Rocky Patel Royale Fumas","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel Seed to Smoke Classic","w":"Maduro","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Rocky Patel Seed to Smoke Shade","w":"Connecticut","o":"Honduras","bn":"Honduran","fi":["Honduran"]},{"l":"Rocky Patel Sixty","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel Sun Grown","w":"Ecuador Sumatra","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Rocky Patel Sun Grown Maduro","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel The Edge 20th Anniversary","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel The Edge A-10","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Nicaraguan","Panamanian"]},{"l":"Rocky Patel The Edge B52","w":"Corojo","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan","Panamanian"]},{"l":"Rocky Patel The Edge Barrel-Aged","w":"Habano","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel The Edge Barrel-Aged Black","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Pennsylvania"]},{"l":"Rocky Patel The Edge Candela","w":"Candela","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel The Edge Connecticut","w":"Connecticut","o":"Honduras","bn":"San Andres","fi":["Honduran","Nicaraguan"]},{"l":"Rocky Patel The Edge Corojo","w":"Corojo","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel The Edge Fumas","w":"Corojo","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel The Edge Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Rocky Patel The Edge Maduro","w":"Habano Maduro","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Rocky Patel The Edge Sumatra","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 1990","w":"Honduran","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Rocky Patel Vintage 1992","w":"Ecuador Sumatra","o":"Honduras","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 1999 Connecticut","w":"Connecticut","o":"Honduras","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 2003 Cameroon","w":"Cameroon","o":"Honduras","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 2006 San Andreas","w":"San Andres","o":"Nicaragua","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 20th Anniversary","w":"Connecticut Broadleaf","o":"Honduras","bn":"Brazil","fi":["Nicaraguan"]},{"l":"Rocky Patel Vintage 2nds","w":"Connecticut","o":"Honduras","bn":"","fi":["Nicaraguan"]},{"l":"Rocky Patel White Label","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"RoMa Craft Baka","w":"Cameroon","o":"Nicaragua","bn":"Undisclosed","fi":["Undisclosed"]},{"l":"RoMa Craft CroMagnon","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Cameroon","fi":["Nicaraguan"]},{"l":"RoMa Craft CroMagnon Aquitaine","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Cameroon","fi":["Nicaraguan"]},{"l":"RoMa Craft Intemperance BA XXI","w":"Brazilian","o":"Nicaragua","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"RoMa Craft Intemperance EC XVIII","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"RoMa Craft Intemperance Volstead VO 1920","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Mexican","fi":["Dominican","Nicaraguan"]},{"l":"RoMa Craft Intemperance Whiskey Rebellion 1794","w":"Ecuador Habano","o":"Nicaragua","bn":"Indonesian","fi":["Dominican","Nicaraguan"]},{"l":"RoMa Craft Neanderthal","w":"San Andres","o":"Nicaragua","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Romeo by Romeo y Julieta","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Romeo San Andres by Romeo y Julieta","w":"San Andres","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Romeo y Julieta 1875","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Romeo y Julieta 1875 Connecticut Nicaragua","w":"Connecticut","o":"Dominican","bn":"Nicaraguan","fi":[]},{"l":"Romeo y Julieta 1875 Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Aniversario","w":"Ecuador Sumatra","o":"Dominican","bn":"Connecticut Broadleaf","fi":["Dominican","Nicaraguan"]},{"l":"Romeo y Julieta Book of Love","w":"Ecuadorian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Romeo y Julieta by AJ Fernandez","w":"Habano Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Envy Amulet","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Media Noche","w":"Maduro","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Romeo y Julieta Miniatures","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Brazilian","Dominican"]},{"l":"Romeo y Julieta Perlado","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Colombian","Dominican"]},{"l":"Romeo y Julieta Reserva Real","w":"Ecuador Connecticut","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Romeo y Julieta Reserva Real Nicaragua","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Reserva Real Twisted Love Story & Twisted Toro","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Reserve","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Romeo y Julieta Reserve Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Romeo y Julieta Viejo","w":"San Andres","o":"Honduras","bn":"Dominican","fi":["Honduran"]},{"l":"Romeo y Julieta Vintage","w":"Connecticut","o":"Dominican","bn":"Mexican","fi":["Dominican"]},{"l":"Ron Mexico","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Room 101 Big Payback 70's","w":"Honduran","o":"","bn":"","fi":[]},{"l":"Room 101 The Big Payback Sumatra","w":"Ecuador Sumatra","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Room101 Big Payback Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Connecticut","fi":["Dominican","Honduran"]},{"l":"Room101 Breakfast in Portugal","w":"Ecuador Connecticut","o":"Dominican","bn":"Mexican","fi":["Dominican"]},{"l":"Room101 Doomsayer","w":"Ecuador Habano","o":"Dominican","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Room101 FARCE","w":"Ecuador Habano","o":"Dominican","bn":"Indonesian","fi":["Dominican","Ecuadorian"]},{"l":"Room101 FARCE Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Undisclosed","fi":["Dominican","Nicaraguan"]},{"l":"Room101 FARCE Maduro","w":"San Andres","o":"Dominican","bn":"Sumatra","fi":["Connecticut","Nicaraguan"]},{"l":"Room101 Ichiban Connecticut","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Room101 Ichiban Habano","w":"Habano","o":"Dominican","bn":"Brazilian","fi":["Nicaraguan"]},{"l":"Room101 Ichiban Maduro","w":"Connecticut Broadleaf","o":"Dominican","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Room101 Miami Snow","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Honduran","fi":["Honduran"]},{"l":"Room101 Muzzle Loader","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Mexican","Nicaraguan"]},{"l":"Room101 Payback Nicaragua","w":"Nicaraguan","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Room101 The Big Payback Connecticut","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Mexican","fi":["Dominican"]},{"l":"Saint Luis Rey","w":"Habano","o":"Honduras","bn":"Nicaraguan","fi":["Honduran","Nicaraguan"]},{"l":"Saint Luis Rey Carenas","w":"Nicaraguan","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Saint Luis Rey Serie G Maduro","w":"Connecticut Broadleaf","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Nicaraguan"]},{"l":"Saint Luis Rey Serie G Natural","w":"Habano","o":"Honduras","bn":"Habano","fi":["Honduran","Nicaraguan"]},{"l":"San Cristobal","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"San Cristobal Elegancia","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"San Cristobal Ovation","w":"Oscuro","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"San Cristobal Quintessence","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"San Cristobal Revelation","w":"Ecuador Sumatra","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Sancho Panza","w":"Connecticut","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Honduran"]},{"l":"Sancho Panza Double Maduro","w":"Oscuro","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Dominican","Honduran"]},{"l":"Sancho Panza Extra-Fuerte","w":"Sun Grown","o":"Honduras","bn":"Honduran","fi":["Nicaraguan"]},{"l":"Schizo","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Schizo Maduro","w":"Maduro","o":"Honduras","bn":"Honduran","fi":[]},{"l":"Shady Moose","w":"Ecuador Connecticut","o":"Honduras","bn":"Mexican","fi":["Colombian","Dominican"]},{"l":"Shrapnel","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Sir Robert Peel","w":"Ecuador Sungrown","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Southern Draw Cedrus","w":"Indonesian","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Southern Draw Firethorn Habano Rosado","w":"Ecuador Habano","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Southern Draw Jacob's Ladder","w":"Maduro","o":"Nicaragua","bn":"Ecuadorian","fi":["Nicaraguan"]},{"l":"Southern Draw Jacob's Ladder Brimstone","w":"Pennsylvania Broadleaf","o":"Nicaragua","bn":"Ecuador","fi":["Nicaraguan"]},{"l":"Southern Draw Kudzu Oscuro","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Southern Draw La Manzanita","w":"Habano","o":"Nicaragua","bn":"Habano","fi":["Nicaraguan"]},{"l":"Southern Draw Rose of Sharon","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Southern Draw Rose of Sharon Desert Rose","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Habano","fi":["Dominican","Honduran"]},{"l":"Super Fly by Oscar Valladares","w":"San Andres","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Super Fly Connecticut by Oscar Valladares","w":"Honduran Connecticut","o":"Honduras","bn":"Honduran","fi":["Dominican","Honduran"]},{"l":"Super-Premium 2nds","w":"Maduro","o":"Honduras","bn":"Dominican","fi":["Honduran"]},{"l":"Swisher Sweets Cigars and Cigarillos","w":"HTL","o":"United States","bn":"","fi":[]},{"l":"Tatiana Caribbean Chill Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Cherry Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Chocolate Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Chocolate Mint Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Cinnamon Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Cognac Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Flavored Cigarillos","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Fusion Frenzy Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Groovy Blue Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Harvest Moon Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Honey Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Mocha","w":"Sumatra","o":"Dominican","bn":"Honduran","fi":[]},{"l":"Tatiana Nightcap Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Rum Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Sweet Euphoria Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Vanilla Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatiana Waking Dream Flavored Cigars","w":"Indonesian","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Tatuaje 10 Year Anniversary","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje 20th Anniversary","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Black","w":"Criollo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Cabaiguan","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Cabaiguan Guapos","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Fausto","w":"Habano Maduro","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Havana VI","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Havana VI Verocu","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Miami","w":"Ecuador Habano","o":"United States","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Negociant Monopole","w":"Ecuador Connecticut","o":"Nicaragua","bn":"Mexican","fi":["Nicaraguan"]},{"l":"Tatuaje Nicaragua","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Reserva Broadleaf","w":"Connecticut Broadleaf","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Tatuaje Skinny Monsters","w":"Habano","o":"Nicaragua","bn":"Varied","fi":["Varied"]},{"l":"Tatuaje Tattoo by Pete Johnson","w":"Ecuador Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"The Bourbon Cigar","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"The Griffin's","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"The Upsetters","w":"Maduro","o":"Nicaragua","bn":"Jamaican","fi":["Nicaraguan"]},{"l":"Torano Casa Torano","w":"Ecuador Connecticut","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Nicaraguan"]},{"l":"Torano Dominico","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Torano Exodus 1959 '50 Years'","w":"Brazilian","o":"Honduras","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Torano Exodus Gold 1959","w":"Habana 2000","o":"Honduras","bn":"Honduran","fi":["Costa Rican","Mexican"]},{"l":"Torano Exodus Silver","w":"Criollo","o":"Nicaragua","bn":"Cameroon","fi":["Costa Rican","Honduran"]},{"l":"Torano Hogshead","w":"Brazilian","o":"Nicaragua","bn":"Sumatra","fi":["Dominican","Nicaraguan"]},{"l":"Torano Noventa","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Torano Reserva Decadencia","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Honduran"]},{"l":"Toscanello","w":"Connecticut","o":"Italy","bn":"","fi":["Kentucky Fire-Cured"]},{"l":"Toscano","w":"Kentucky Fire-Cured","o":"Italy","bn":"","fi":[]},{"l":"Toscano Garibaldi","w":"Kentucky Fire-Cured","o":"Italy","bn":"San Andres","fi":["Italian","Kentucky Fire-Cured"]},{"l":"Toscano Master Aged","w":"Kentucky Fire-Cured","o":"Italy","bn":"","fi":["Kentucky Fire-Cured"]},{"l":"Toscano Originale","w":"Kentucky Fire-Cured","o":"Italy","bn":"Italian","fi":["Kentucky Fire-Cured"]},{"l":"Trader Jack's Kickin' Cigars - Midnight","w":"Connecticut Broadleaf","o":"United States","bn":"Dominican","fi":["Honduran"]},{"l":"Trader Jack's Kickin' Cigars - Sunrise","w":"Connecticut","o":"United States","bn":"Dominican","fi":["Honduran"]},{"l":"Trader Jacks Kickin' Cigars","w":"Connecticut","o":"United States","bn":"Dominican","fi":["Honduran"]},{"l":"Trinidad Espiritu No. 3","w":"Mexican","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Trinidad Espiritu Series No. 2","w":"Brazilian","o":"Nicaragua","bn":"Nicaraguan","fi":["Brazilian","Nicaraguan"]},{"l":"Trinidad Espiritu Series No.1","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Ugly Coyote","w":"Honduran","o":"Honduras","bn":"","fi":[]},{"l":"Varina Farms Breakfast Blend","w":"Connecticut","o":"Honduras","bn":"Undisclosed","fi":["Dominican","Honduran"]},{"l":"VegaFina","w":"Ecuador Connecticut","o":"Dominican","bn":"Honduran","fi":["Colombian","Dominican"]},{"l":"Victor Sinclair 20th Anniversary","w":"Ecuador Habano","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Victor Sinclair Bohemian Bamboo","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Victor Sinclair Cigarillos","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Victor Sinclair Clasicos","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Victor Sinclair Connecticut Yankee","w":"Habano Connecticut","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Victor Sinclair Primeros","w":"Connecticut","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Victor Sinclair Serie '55' Corojo Petites","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Brazilian","Dominican"]},{"l":"Victor Sinclair Serie '55' Imperial Connecticut","w":"Connecticut","o":"Dominican","bn":"Brazil","fi":["Dominican","Nicaraguan"]},{"l":"Victor Sinclair Serie '55' Imperial Habano","w":"Ecuador Habano","o":"Dominican","bn":"Brazil","fi":["Dominican","Nicaraguan"]},{"l":"Victor Sinclair Serie '55' Imperial Maduro","w":"Pennsylvania Broadleaf","o":"Dominican","bn":"Mexican","fi":["Honduran"]},{"l":"Victor Sinclair Serie ‘55’ White Label Connecticut","w":"Connecticut","o":"Dominican","bn":"","fi":[]},{"l":"Victor Sinclair Triple Corojo","w":"Corojo","o":"Dominican","bn":"Dominican","fi":["Dominican"]},{"l":"Victor Sinclair Vintage Doppel Gordo","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Victor Sinclair Vintage Select","w":"Brazilian","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Victory Sinclair Overruns","w":"Varied","o":"Dominican","bn":"Sumatra","fi":["Dominican"]},{"l":"Villazon Maduro","w":"Maduro","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Colombian","Dominican"]},{"l":"Villazon Natural","w":"Ecuador Sumatra","o":"Honduras","bn":"Connecticut Broadleaf","fi":["Colombian","Dominican"]},{"l":"Villiger Braniff","w":"Maduro","o":"Europe","bn":"","fi":[]},{"l":"Villiger Connecticut","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Villiger Culebras","w":"Sumatra","o":"Europe","bn":"","fi":[]},{"l":"Villiger Export","w":"Brazilian","o":"Europe","bn":"Brazilian","fi":[]},{"l":"Villiger Habano","w":"Habano","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Villiger Mini - Red Vanilla Cigarillos","w":"Indonesian","o":"Europe","bn":"","fi":[]},{"l":"Villiger Mini Cigarillos - Black","w":"Indonesian","o":"Europe","bn":"","fi":[]},{"l":"Villiger Mini Cigarillos Gold Filtered","w":"Indonesian","o":"Europe","bn":"","fi":[]},{"l":"Warped Chinchalle","w":"Ecuadorian","o":"Dominican","bn":"Dominican","fi":[]},{"l":"Warped Corto","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Warped Eagles Descent","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":[]},{"l":"Warped Flor Del Valle","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Warped Futuro","w":"Corojo","o":"Nicaragua","bn":"Criollo","fi":["Nicaraguan"]},{"l":"Warped La Colmena","w":"Ecuador Habano","o":"United States","bn":"Dominican","fi":["Nicaraguan"]},{"l":"Warped La Colmena Black Honey","w":"Ecuador","o":"United States","bn":"Ecuador","fi":["Dominican","Nicaraguan"]},{"l":"Warped La Hacienda","w":"Nicaraguan","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"Warped Serie Gran Reserva 1988","w":"Corojo","o":"Nicaragua","bn":"Nicaraguan","fi":["Varied"]},{"l":"Warped The Devil's Hands","w":"Corojo","o":"Nicaragua","bn":"","fi":[]},{"l":"White Heather by JC Newman","w":"Connecticut","o":"Nicaragua","bn":"Nicaraguan","fi":["Nicaraguan"]},{"l":"White Owl Cigars","w":"HTL","o":"United States","bn":"","fi":[]},{"l":"Zino Nicaragua","w":"Ecuador Connecticut","o":"Honduras","bn":"Nicaraguan","fi":["Dominican","Honduran"]},{"l":"Zino Platinum Crown Series","w":"Ecuador Connecticut","o":"Dominican","bn":"Connecticut","fi":["Dominican","Peruvian"]},{"l":"Zino Platinum Scepter Series","w":"Ecuador Connecticut","o":"Dominican","bn":"Dominican","fi":["Peruvian"]}];
+
+/* ============ STATE ============ */
+const KEY="ember.journal.v1";
+let data=[];
+data=load();
+function load(){let d=null;try{const r=localStorage.getItem(KEY);if(r)d=JSON.parse(r);}catch(e){}
+  if(!Array.isArray(d)) d=SEED.map((x,i)=>({id:"seed"+i,...x}));
+  d.forEach(e=>{if(typeof e.u!=="number")e.u=Date.parse(e.d)||Date.now();if(e.deleted==null)e.deleted=0;});
+  save(d);return d;}
+function save(d){data=d||data;try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const live=()=>data.filter(e=>!e.deleted);
+const rated=()=>live().filter(e=>typeof e.r==="number");
+const bodyOrder=["Light","Med-Light","Med","Med-Full","Full"];
+function fmtDate(d){if(!d)return"";const[y,m,da]=d.split("-");
+  return new Date(y,m-1,da).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("on"),1900);}
+function uniq(arr){return[...new Set(arr.filter(Boolean))];}
+
+/* flavor lexicon -> regex */
+const FLAVORS=[
+ ["Chocolate",/chocolat|cocoa|s'?more/i],["Sweetness",/sweet|molasses|honey|sugar/i],
+ ["Pepper / spice",/pepper|spice|spicy/i],["Leather",/leather/i],
+ ["Cracker / toast",/cracker|toast|bread|bready|graham/i],["Creamy",/cream/i],
+ ["Coffee",/coffee|espresso/i],["Nutty",/nut|almond|cashew/i],
+ ["Wood / cedar",/wood|cedar|oak|barrel/i],["Dark fruit",/raisin|cherry|fig|plum|fruit|apricot/i],
+ ["Smooth",/smooth/i],["Earthy / meaty",/earth|meaty|funk/i]
+];
+
+/* ============ ANALYSIS ============ */
+function agg(keyFn){
+  const m={};
+  rated().forEach(e=>{(keyFn(e)||[]).forEach(k=>{if(!k)return;
+    (m[k]=m[k]||[]).push(e.r);});});
+  return Object.entries(m).map(([k,v])=>({k,n:v.length,avg:v.reduce((a,b)=>a+b,0)/v.length}));
+}
+function topBy(rows,minN){return rows.filter(r=>r.n>=minN).sort((a,b)=>b.avg-a.avg||b.n-a.n);}
+
+function renderPalate(){
+  const R=rated();
+  $("#hdcount").textContent=live().length+" logged";
+  if(!R.length){$("#verdict").innerHTML='<div class="pad empty">Log a few smokes and your palate reads out here.</div>';return;}
+
+  const avg=R.reduce((a,e)=>a+e.r,0)/R.length;
+  const origin=topBy(agg(e=>[e.o]),2);
+  const wrapper=topBy(agg(e=>[e.w]),2);
+  const binder=topBy(agg(e=>[e.bn]),2);
+  const filler=topBy(agg(e=>[...(e.fi||[])]),2);
+  const body=topBy(agg(e=>[e.bd]),2);
+  const shape=topBy(agg(e=>[e.sh]),2);
+  const maduro=R.filter(e=>/maduro/i.test(e.wn)||/maduro/i.test(e.l));
+  const madAvg=maduro.length?maduro.reduce((a,e)=>a+e.r,0)/maduro.length:0;
+  const social=R.filter(e=>e.s), solo=R.filter(e=>!e.s);
+  const socAvg=social.length?social.reduce((a,e)=>a+e.r,0)/social.length:0;
+  const soloAvg=solo.length?solo.reduce((a,e)=>a+e.r,0)/solo.length:0;
+
+  /* verdict sentence */
+  const o=origin[0], w=wrapper[0], bd=body[0];
+  let line=`You're a <em>${o?o.k:"Nicaraguan"}</em> smoker`;
+  if(w) line+=`, happiest under a <em>${w.k}</em> wrapper`;
+  if(madAvg>=avg+0.1 && maduro.length>=3) line+=` — and a <em>maduro</em> at heart`;
+  line+=`.`;
+  $("#verdict").innerHTML=`
+    <h2>Your palate, read from ${R.length} rated smokes</h2>
+    <div class="line">${line}</div>
+    <div class="meta">
+      ${bd?`<span>Sweet spot body · <b>${bd.k}</b></span>`:""}
+      ${maduro.length>=3?`<span>Maduro avg · <b>${madAvg.toFixed(2)}</b></span>`:""}
+      ${social.length?`<span>Social vs solo · <b>${socAvg.toFixed(2)} / ${soloAvg.toFixed(2)}</b></span>`:""}
+    </div>`;
+
+  /* stat strip */
+  const best=R.reduce((a,b)=>b.r>a.r?b:a);
+  $("#statstrip").innerHTML=`
+    <div class="stat"><div class="v">${avg.toFixed(2)}</div><div class="k">avg rating</div></div>
+    <div class="stat"><div class="v">${uniq(live().map(e=>e.b)).length}</div><div class="k">brands tried</div></div>
+    <div class="stat"><div class="v">${best.r}<small>★</small></div><div class="k">your top score</div></div>`;
+
+  /* flavors */
+  const fl=FLAVORS.map(([name,re])=>{
+    const hit=R.filter(e=>re.test(e.n||""));
+    return{name,n:hit.length,avg:hit.length?hit.reduce((a,e)=>a+e.r,0)/hit.length:0};
+  }).filter(f=>f.n>0).sort((a,b)=>b.n-a.n);
+  const fmax=Math.max(...fl.map(f=>f.n),1);
+  $("#flavors").innerHTML=`<h3>Flavors in your notes</h3>
+    <div class="hint">How often a descriptor shows up, and your average rating when it does.</div>
+    ${fl.map(f=>`<div class="rankrow">
+      <div class="name"><span>${f.name}</span></div>
+      <div class="bar"><i style="width:${Math.round(f.n/fmax*100)}%"></i></div>
+      <div class="score">${f.avg.toFixed(2)}</div>
+    </div>`).join("")}
+    <div class="chips" style="margin-top:12px">
+      ${fl.slice(0,6).map(f=>`<span class="chip">${f.name} <span class="c">×${f.n}</span></span>`).join("")}
+    </div>`;
+
+  rankCard("#rk-origin","Origin","where the tobacco's from",origin);
+  rankCard("#rk-wrapper","Wrapper leaf","the outer leaf — drives flavor most",wrapper);
+  rankCard("#rk-binder","Binder","holds the bunch together",binder);
+  rankCard("#rk-filler","Filler","the core blend",filler);
+  rankCard("#rk-body","Body","strength / weight",body,true);
+  rankCard("#rk-shape","Shape / vitola","size & format",shape);
+
+  /* top rated */
+  const top=[...R].sort((a,b)=>b.r-a.r||(b.d>a.d?1:-1)).slice(0,6);
+  $("#toprated").innerHTML=top.map((e,i)=>entryRow(e,i===top.length-1)).join("");
+}
+
+function rankCard(sel,title,hint,rows,keepOrder){
+  if(!rows.length){$(sel).innerHTML=`<h3>${title}</h3><div class="hint">${hint}</div>
+    <div class="hint" style="margin-top:8px;color:var(--faint)">Not enough data yet.</div>`;return;}
+  const max=5;
+  let r=rows.slice(0,6);
+  if(keepOrder) r=[...r].sort((a,b)=>bodyOrder.indexOf(a.k)-bodyOrder.indexOf(b.k));
+  $(sel).innerHTML=`<h3>${title}</h3><div class="hint">${hint}</div>
+    ${r.map(x=>`<div class="rankrow">
+      <div class="name"><span>${x.k}</span><span class="n" title="${x.n} logged">×${x.n}</span></div>
+      <div class="bar"><i style="width:${Math.round(x.avg/max*100)}%"></i></div>
+      <div class="score">${x.avg.toFixed(2)}</div>
+    </div>`).join("")}`;
+}
+
+/* ============ JOURNAL ============ */
+function embers(r){
+  if(typeof r!=="number")return"";
+  let h="";for(let i=1;i<=5;i++){
+    if(r>=i)h+='<span class="e f"></span>';
+    else if(r>=i-0.5)h+='<span class="e h"></span>';
+    else h+='<span class="e"></span>';}
+  return h;
+}
+function entryRow(e,last){
+  const fi=(e.fi||[]).join(" · ");
+  return `<div class="entry" data-id="${e.id}">
+    <div class="top">
+      <span class="nm">${e.l||e.b||"Untitled"}</span>
+      <span class="dt">${fmtDate(e.d)}</span>
+    </div>
+    <div class="br">${e.b||""}</div>
+    <div class="mid">
+      ${e.o?`<span class="tagm o">${e.o}</span>`:""}
+      ${e.w?`<span class="tagm">${e.w}</span>`:""}
+      ${e.bd?`<span class="tagm">${e.bd}</span>`:""}
+      ${e.sh?`<span class="tagm">${e.sh}</span>`:""}
+      ${e.s?`<span class="soc">social</span>`:""}
+    </div>
+    ${e.n?`<div class="nt">${e.n}</div>`:""}
+    <div class="mid" style="justify-content:space-between;align-items:center;margin-top:11px">
+      <div class="rate">${typeof e.r==="number"?`<span class="num">${e.r}</span><div class="embers">${embers(e.r)}</div>`:`<span class="ratehint">unrated</span>`}</div>
+    </div>
+  </div>${last?"":'<div class="sep"></div>'}`;
+}
+function renderJournal(){
+  const q=$("#q").value.trim().toLowerCase();
+  const sort=$("#sort").value;
+  let rows=live().filter(e=>{
+    if(!q)return true;
+    return [e.b,e.l,e.w,e.wn,e.bn,e.o,e.sh,e.bd,(e.fi||[]).join(" "),e.n]
+      .join(" ").toLowerCase().includes(q);
+  });
+  rows.sort((a,b)=>{
+    if(sort==="rating")return(b.r??-1)-(a.r??-1)||(b.d>a.d?1:-1);
+    if(sort==="oldest")return a.d>b.d?1:-1;
+    if(sort==="name")return(a.l||a.b||"").localeCompare(b.l||b.b||"");
+    return a.d>b.d?-1:1;
+  });
+  $("#list").innerHTML=rows.length
+    ? rows.map((e,i)=>entryRow(e,i===rows.length-1)).join("")
+    : '<div class="empty">Nothing matches that. Try another word.</div>';
+}
+
+/* ============ DETAIL SHEET ============ */
+function openDetail(id){
+  const e=data.find(x=>x.id===id);if(!e)return;
+  const fi=(e.fi||[]).join(", ");
+  $("#sheet").innerHTML=`
+    <button class="x" id="closex">✕</button>
+    <div class="hd">
+      <div class="eyebrow">${fmtDate(e.d)}${e.s?" · social smoke":""}</div>
+      <h2 style="font-size:25px;margin-top:4px">${e.l||e.b||"Untitled"}</h2>
+      <div class="br" style="margin-top:4px">${e.b||""}</div>
+      <div class="rate" style="margin:14px 0 6px">
+        ${typeof e.r==="number"?`<span class="num" style="font-size:20px">${e.r}</span><div class="embers">${embers(e.r)}</div>`:`<span class="ratehint">unrated</span>`}
+      </div>
+    </div>
+    <dl class="dl">
+      ${e.o?`<dt>origin</dt><dd>${e.o}</dd>`:""}
+      ${e.bd?`<dt>body</dt><dd>${e.bd}</dd>`:""}
+      ${e.sh?`<dt>shape</dt><dd>${e.sh}</dd>`:""}
+      ${e.w?`<dt>wrapper</dt><dd>${e.w}${e.wn?` · ${e.wn}`:""}</dd>`:""}
+      ${e.bn?`<dt>binder</dt><dd>${e.bn}</dd>`:""}
+      ${fi?`<dt>filler</dt><dd>${fi}</dd>`:""}
+    </dl>
+    ${e.n?`<div class="dnotes">“${e.n}”</div>`:""}
+    <div class="delrow"><button class="del" id="delbtn">Delete entry</button></div>`;
+  $("#scrim").classList.add("on");document.body.style.overflow="hidden";
+  $("#closex").onclick=closeDetail;
+  $("#delbtn").onclick=()=>{
+    if(confirm("Delete this entry? This can't be undone.")){
+      const t=data.find(x=>x.id===id);if(t){t.deleted=1;t.u=Date.now();}
+      save();closeDetail();renderAll();toast("Entry deleted");pushSync();}
+  };
+}
+function closeDetail(){$("#scrim").classList.remove("on");document.body.style.overflow="";}
+$("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeDetail();});
+
+/* ============ LOG FORM ============ */
+let rating=null;
+function buildStars(){
+  const s=$("#stars");s.innerHTML="";
+  for(let i=1;i<=5;i++){const b=document.createElement("button");
+    b.innerHTML='<span class="dot"></span>';b.dataset.i=i;
+    b.onclick=()=>{const half=i-0.5;rating=(rating===half)?i:(rating===i?null:half);paintStars();};
+    s.appendChild(b);}
+  paintStars();
+}
+function paintStars(){
+  $$("#stars button").forEach(b=>{const i=+b.dataset.i;b.classList.remove("on","half");
+    if(rating>=i)b.classList.add("on");else if(rating>=i-0.5)b.classList.add("half");});
+  $("#rateval").textContent=rating?rating.toFixed(rating%1?2:0).replace(/\.00$/,""):"—";
+}
+function fillDatalists(){
+  const all=live();
+  const set=(sel,vals)=>{$(sel).innerHTML=uniq(vals).sort().map(v=>`<option value="${v.replace(/"/g,'&quot;')}">`).join("");};
+  const refLabels=REF.map(r=>r.l);
+  set("#dl-label",[...all.map(e=>e.l),...refLabels]);
+  set("#dl-brand",[...all.map(e=>e.b),...REF.map(r=>r.b)]);
+  set("#dl-origin",[...all.map(e=>e.o),...REF.map(r=>r.o)]);
+  set("#dl-wrapper",[...all.map(e=>e.w),...REF.map(r=>r.w)]);
+  set("#dl-wnote",all.map(e=>e.wn));
+  set("#dl-binder",[...all.map(e=>e.bn),...REF.map(r=>r.bn)]);
+  set("#dl-shape",all.map(e=>e.sh));
+}
+/* match a typed blend against your history + the 1,238-cigar catalog */
+function cleanLeaf(s){return(s||"").replace(/[,;]+$/,"").trim();}
+function shortest(a){return a.reduce((x,y)=>((y.l||"").length<(x.l||"").length?y:x));}
+function findMatch(label,brand,pool){
+  const v=(label||"").trim().toLowerCase();if(v.length<3)return null;
+  const br=(brand||"").trim().toLowerCase();
+  pool=pool||[...live(),...REF];                      // your logs first, then catalog
+  let m=pool.find(e=>(e.l||"").toLowerCase()===v);    // exact full-name
+  if(m)return m;
+  let cands=pool.filter(e=>(e.l||"").toLowerCase().includes(v));
+  if(br){const b2=cands.filter(e=>((e.b||"")+" "+(e.l||"")).toLowerCase().includes(br));if(b2.length)return shortest(b2);}
+  if(cands.length)return shortest(cands);
+  if(br){const c2=pool.filter(e=>{const l=(e.l||"").toLowerCase();return l.includes(v)&&l.includes(br);});if(c2.length)return shortest(c2);}
+  return null;
+}
+function tryPrefill(){
+  const note=$("#prefill");
+  const m=findMatch($("#f-label").value,$("#f-brand").value);
+  if(!m){
+    if($("#f-label").value.trim().length>=3){
+      note.textContent="No catalog match — fill the leaf fields yourself";
+      note.classList.add("nomatch","show");setTimeout(()=>note.classList.remove("show"),2800);}
+    return;}
+  const setIf=(sel,val)=>{val=cleanLeaf(val);if(val&&!$(sel).value)$(sel).value=val;};
+  setIf("#f-brand",m.b);setIf("#f-origin",m.o);setIf("#f-wrapper",m.w);
+  setIf("#f-binder",m.bn);setIf("#f-body",m.bd);setIf("#f-shape",m.sh);setIf("#f-wnote",m.wn);
+  if(m.fi&&m.fi.length&&!$("#f-filler").value)$("#f-filler").value=m.fi.map(cleanLeaf).filter(Boolean).join(", ");
+  note.classList.remove("nomatch");
+  note.textContent="✓ Matched \u201C"+m.l+"\u201D — wrapper, binder & filler filled from catalog";
+  note.classList.add("show");setTimeout(()=>note.classList.remove("show"),3400);
+}
+$("#f-label").addEventListener("change",tryPrefill);
+$("#f-label").addEventListener("blur",tryPrefill);
+$("#f-brand").addEventListener("change",tryPrefill);
+
+/* live lookup via the Worker's /api/lookup */
+$("#lookup").onclick=async()=>{
+  const name=$("#f-label").value.trim(), brand=$("#f-brand").value.trim();
+  const note=$("#prefill");
+  if(!name&&!brand){toast("Type a blend or brand first");return;}
+  note.classList.remove("nomatch");note.classList.add("show");note.textContent="Searching the web…";
+  $("#lookup").disabled=true;
+  try{
+    const res=await fetch("/api/lookup",{method:"POST",credentials:"same-origin",
+      headers:{"Content-Type":"application/json"},body:JSON.stringify({brand,name})});
+    if(res.status===400){const e=await res.json().catch(()=>({}));
+      note.classList.add("nomatch");
+      note.textContent=e.error==="no_api_key"
+        ?"Add an ANTHROPIC_API_KEY secret to your Worker to enable lookup"
+        :"Type a blend or brand first";return;}
+    if(!res.ok)throw new Error(res.status);
+    const r=await res.json();
+    if(!r.found){note.classList.add("nomatch");note.textContent="No reliable match found online — fill it yourself";return;}
+    const setIf=(sel,val)=>{val=cleanLeaf(val);if(val&&!$(sel).value)$(sel).value=val;};
+    setIf("#f-origin",r.origin);setIf("#f-wrapper",r.wrapper);setIf("#f-binder",r.binder);
+    setIf("#f-body",r.body);setIf("#f-shape",r.shape);
+    if(r.filler&&!$("#f-filler").value)
+      $("#f-filler").value=(Array.isArray(r.filler)?r.filler:String(r.filler).split(",")).map(cleanLeaf).filter(Boolean).join(", ");
+    note.classList.remove("nomatch");
+    note.textContent="\u2713 Found online"+(r.source?" \u00B7 "+r.source:"")+" — filled the blanks";
+  }catch(e){note.classList.add("nomatch");note.textContent="Lookup failed — check your connection and try again";}
+  finally{$("#lookup").disabled=false;setTimeout(()=>note.classList.remove("show"),5000);}
+};
+
+/* backfill blank fields on existing entries from the catalog + your own history */
+$("#backfill").onclick=()=>{
+  let fields=0,touchedEntries=0;
+  live().forEach(e=>{
+    const pool=[...REF,...live().filter(x=>x.id!==e.id)];
+    const m=findMatch(e.l,e.b,pool);if(!m)return;
+    let touched=false;
+    const fill=(k,val)=>{val=cleanLeaf(val);if(val&&!(e[k]&&String(e[k]).trim())){e[k]=val;touched=true;fields++;}};
+    fill("w",m.w);fill("bn",m.bn);fill("o",m.o);fill("bd",m.bd);fill("sh",m.sh);
+    if((!e.fi||!e.fi.length)&&m.fi&&m.fi.length){e.fi=m.fi.map(cleanLeaf).filter(Boolean);touched=true;fields++;}
+    if(touched){e.u=Date.now();touchedEntries++;}
+  });
+  if(fields){save();fillDatalists();renderAll();pushSync();
+    toast("Filled "+fields+" blanks across "+touchedEntries+" entries");}
+  else toast("Nothing to fill — entries already complete or unmatched");
+};
+
+
+function clearForm(){
+  ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
+    .forEach(id=>$("#"+id).value="");
+  $("#f-body").value="";$("#f-social").checked=false;rating=null;paintStars();
+  $("#f-date").value=new Date().toISOString().slice(0,10);
+}
+$("#clear").onclick=()=>{clearForm();toast("Cleared");};
+$("#save").onclick=()=>{
+  const l=$("#f-label").value.trim(), b=$("#f-brand").value.trim();
+  if(!l&&!b){toast("Add at least a blend or brand");return;}
+  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,d:$("#f-date").value||new Date().toISOString().slice(0,10),
+    b,l,sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
+    w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),
+    bn:$("#f-binder").value.trim(),
+    fi:$("#f-filler").value.split(",").map(x=>x.trim()).filter(Boolean),
+    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,
+    n:$("#f-notes").value.trim()};
+  data=[e,...data];save();fillDatalists();renderAll();clearForm();
+  toast("Added to journal ·  "+(e.l||e.b));pushSync();
+  switchTab("journal");
+};
+
+/* ============ EXPORT / IMPORT ============ */
+function dl(name,text,type){const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();}
+$("#exp-json").onclick=()=>{dl("ember-journal.json",JSON.stringify(live(),null,2),"application/json");toast("Backup downloaded");};
+$("#exp-csv").onclick=()=>{
+  const cols=["d","b","l","sh","bd","w","wn","bn","fi","o","r","s","n"];
+  const head=["Date","Brand","Blend","Shape","Body","Wrapper","WrapperNote","Binder","Filler","Origin","Rating","Social","Notes"];
+  const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const rows=live().map(e=>cols.map(c=>esc(c==="fi"?(e.fi||[]).join(", "):e[c])).join(","));
+  dl("ember-journal.csv",[head.join(","),...rows].join("\n"),"text/csv");toast("CSV downloaded");};
+$("#imp").onclick=()=>$("#impfile").click();
+$("#impfile").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=()=>{try{const arr=JSON.parse(rd.result);
+    if(!Array.isArray(arr))throw 0;
+    arr.forEach((e,i)=>{if(!e.id)e.id="imp"+Date.now()+i;
+      if(typeof e.u!=="number")e.u=Date.parse(e.d)||Date.now();if(e.deleted==null)e.deleted=0;});
+    data=arr;save();fillDatalists();renderAll();toast("Imported "+arr.length+" entries");
+    pushSync();switchTab("palate");}catch(e){toast("Couldn't read that file");}};rd.readAsText(f);};
+
+/* ============ TABS / WIRING ============ */
+function switchTab(name){
+  $$(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===name));
+  $$(".panel").forEach(p=>p.classList.toggle("on",p.id===name));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$$(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+$("#q").addEventListener("input",renderJournal);
+$("#sort").addEventListener("change",renderJournal);
+document.addEventListener("click",e=>{const en=e.target.closest(".entry");if(en)openDetail(en.dataset.id);});
+
+function renderAll(){renderPalate();renderJournal();}
+
+/* ============ SYNC (fixed backend — Cloudflare Worker + D1) ============ */
+const CKEY="ember.cursor", PKEY="ember.pushed";
+let cursor=+(localStorage.getItem(CKEY)||0);
+let pushed=+(localStorage.getItem(PKEY)||0);
+let account="";
+let syncing=false;
+
+function setPill(state,label){const b=$("#syncbtn");b.className="syncpill"+(state?" "+state:"");b.textContent=label;}
+function updateSyncUI(){
+  if(syncing){setPill("busy","↻ Syncing…");return;}
+  if(!account){setPill("","○ Offline");return;}
+  const t=cursor?new Date(cursor).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"";
+  setPill("ok",t?"● Synced "+t:"● Connected");
+}
+
+class SessionExpired extends Error{}
+
+async function apiFetch(path,opts){
+  const res=await fetch(path,{credentials:"same-origin",...opts,
+    headers:{"Content-Type":"application/json",...(opts&&opts.headers)}});
+  // Access returns a redirect to the login page once the session lapses.
+  if(res.redirected||res.status===302||res.status===403) throw new SessionExpired();
+  const ct=res.headers.get("Content-Type")||"";
+  if(!ct.includes("application/json")) throw new SessionExpired();
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  return res.json();
+}
+
+function mergeServer(server){
+  const map={};data.forEach(e=>map[e.id]=e);
+  server.forEach(s=>{const cur=map[s.id];if(!cur||(s.u||0)>=(cur.u||0))map[s.id]=s;});
+  data=Object.values(map);
+}
+
+async function syncNow(silent){
+  if(syncing)return;
+  syncing=true;updateSyncUI();
+  try{
+    const dirty=data.filter(e=>(e.u||0)>pushed);
+    if(dirty.length) await apiFetch("/api/entries",{method:"POST",body:JSON.stringify({entries:dirty})});
+    const maxDirty=dirty.reduce((m,e)=>Math.max(m,e.u||0),pushed);
+
+    const out=await apiFetch("/api/entries?since="+cursor);
+    mergeServer(out.entries||[]);
+    cursor=out.cursor||cursor;
+    pushed=maxDirty;
+    account=out.email||"";
+    localStorage.setItem(CKEY,String(cursor));
+    localStorage.setItem(PKEY,String(pushed));
+
+    save();fillDatalists();renderAll();
+    syncing=false;updateSyncUI();
+    if(!silent)toast("Synced");
+  }catch(e){
+    syncing=false;
+    if(e instanceof SessionExpired){
+      account="";setPill("err","⚠ Sign in");
+      if(!silent)toast("Session expired — reload to sign in");
+    }else{
+      setPill("err","⚠ Offline");
+      if(!silent)toast("Sync failed — you're offline");
+    }
+  }
+}
+function pushSync(){syncNow(true);}
+
+$("#syncbtn").onclick=()=>{
+  if(!account&&!navigator.onLine){toast("No connection");return;}
+  if(!account){location.reload();return;}
+  syncNow();
+};
+window.addEventListener("online",()=>syncNow(true));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncNow(true);});
+
+/* ============ BOOT ============ */
+buildStars();fillDatalists();clearForm();renderAll();
+updateSyncUI();syncNow(true);
+
+if("serviceWorker" in navigator)
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
+</script>
+</body>
+</html>
