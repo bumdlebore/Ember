@@ -49,7 +49,8 @@ export default {
     if (url.pathname === "/api/entries") {
       if (request.method === "GET") {
         const since = Number.parseInt(url.searchParams.get("since") || "0", 10);
-        const out = await listEntries(env.DB, identity.email, Number.isFinite(since) ? since : 0);
+        const clampedSince = Number.isFinite(since) ? Math.max(since, 0) : 0;
+        const out = await listEntries(env.DB, identity.email, clampedSince);
         return json({ ...out, email: identity.email });
       }
       if (request.method === "POST") {
