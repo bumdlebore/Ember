@@ -144,6 +144,31 @@ describe("worker routing — authenticated", () => {
     expect(res.headers.get("Content-Type")).toMatch(/text\/html/);
   });
 
+  it("GET / with a valid assertion carries the X-Ember-Shell header the service worker relies on", async () => {
+    const token = await mintJwt();
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.headers.get("X-Ember-Shell")).toBe("1");
+  });
+
+  it("GET /sw.js does not carry X-Ember-Shell (only the app shell HTML should)", async () => {
+    const res = await SELF.fetch("https://ember.austinsego.com/sw.js");
+    expect(res.headers.get("X-Ember-Shell")).toBeNull();
+  });
+
+  it("GET /api/entries with a valid assertion does not carry X-Ember-Shell", async () => {
+    const token = await mintJwt({ email: "austin@example.com" });
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.headers.get("X-Ember-Shell")).toBeNull();
+  });
+
   it("GET /api/entries with a valid assertion returns entries/cursor/email", async () => {
     const token = await mintJwt({ email: "austin@example.com" });
     const res = await callWorker(

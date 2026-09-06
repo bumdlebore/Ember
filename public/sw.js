@@ -29,7 +29,12 @@ self.addEventListener("fetch", (event) => {
       try {
         const res = await fetch(event.request);
         // A redirect means the Access session lapsed; do not cache the login page.
-        if (res.ok && !res.redirected && res.type === "basic") {
+        // Access can also serve a login/challenge page as a same-URL 200 with no
+        // redirect (silent re-auth interstitial, device-posture check), which would
+        // slip past the checks above. X-Ember-Shell is set only by our own Worker on
+        // the real app HTML, so it is positive proof this response isn't an Access
+        // interstitial — don't drop it even if the checks above look sufficient.
+        if (res.ok && !res.redirected && res.type === "basic" && res.headers.get("X-Ember-Shell") === "1") {
           cache.put(event.request, res.clone());
         }
         return res;
