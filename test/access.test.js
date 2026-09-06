@@ -157,4 +157,83 @@ describe("verifyAccessJwt", () => {
     expect(caught).toBeInstanceOf(Error);
     expect(caught instanceof JwksUnavailable).toBe(false);
   });
+
+  it("rejects a token with alg: none", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async (url) => {
+      if (String(url).includes("/cdn-cgi/access/certs")) {
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("unexpected fetch: " + url);
+    });
+    const token = await mintJwt({}, { alg: "none" });
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toThrow();
+  });
+
+  it("rejects a token whose iss is a different team domain", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async (url) => {
+      if (String(url).includes("/cdn-cgi/access/certs")) {
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("unexpected fetch: " + url);
+    });
+    const token = await mintJwt({
+      iss: "https://evil.cloudflareaccess.com",
+    });
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toThrow(/iss/i);
+  });
+
+  it("damps repeated JWKS refetches for an unknown kid within the rotation interval", async () => {
+    __resetJwksCache();
+    let fetchCount = 0;
+    vi.stubGlobal("fetch", async (url) => {
+      if (String(url).includes("/cdn-cgi/access/certs")) {
+        fetchCount++;
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("unexpected fetch: " + url);
+    });
+    const token = await mintJwt({}, { kid: "not-a-real-key" });
+
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toThrow(/key/i);
+    await expect(
+      verifyAccessJwt(token, { teamDomain: TEAM, aud: AUD })
+    ).rejects.toThrow(/key/i);
+
+    expect(fetchCount).toBe(1);
+  });
+
+  it("rejects when aud is undefined, and not with JwksUnavailable", async () => {
+    __resetJwksCache();
+    vi.stubGlobal("fetch", async (url) => {
+      if (String(url).includes("/cdn-cgi/access/certs")) {
+        return new Response(JSON.stringify({ keys: [jwk] }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error("unexpected fetch: " + url);
+    });
+    const token = await mintJwt();
+    let caught;
+    try {
+      await verifyAccessJwt(token, { teamDomain: TEAM, aud: undefined });
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(Error);
+    expect(caught instanceof JwksUnavailable).toBe(false);
+  });
 });

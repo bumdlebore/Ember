@@ -1,8 +1,12 @@
 const jwksCache = new Map(); // teamDomain -> { keys: Map<kid, CryptoKey>, at: number }
 const JWKS_TTL_MS = 60 * 60 * 1000;
+const JWKS_ROTATION_MIN_INTERVAL_MS = 60 * 1000;
+
+const lastRotationRefetchAt = new Map(); // teamDomain -> timestamp of last unknown-kid refetch
 
 export function __resetJwksCache() {
   jwksCache.clear();
+  lastRotationRefetchAt.clear();
 }
 
 function b64urlToBytes(s) {
@@ -27,18 +31,27 @@ async function loadKeys(teamDomain) {
     throw new JwksUnavailable(`JWKS fetch failed: ${e.message}`);
   }
   if (!res.ok) throw new JwksUnavailable(`JWKS fetch failed: ${res.status}`);
-  const body = await res.json();
+  let body;
+  try {
+    body = await res.json();
+  } catch (e) {
+    throw new JwksUnavailable(`JWKS response was not valid JSON: ${e.message}`);
+  }
   const keys = new Map();
-  for (const jwk of body.keys || []) {
-    if (!jwk.kid) continue;
-    const key = await crypto.subtle.importKey(
-      "jwk",
-      { ...jwk, alg: "RS256", ext: true },
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["verify"]
-    );
-    keys.set(jwk.kid, key);
+  try {
+    for (const jwk of body.keys || []) {
+      if (!jwk.kid) continue;
+      const key = await crypto.subtle.importKey(
+        "jwk",
+        { ...jwk, alg: "RS256", ext: true },
+        { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+        false,
+        ["verify"]
+      );
+      keys.set(jwk.kid, key);
+    }
+  } catch (e) {
+    throw new JwksUnavailable(`JWKS response had an unusable key: ${e.message}`);
   }
   const entry = { keys, at: Date.now() };
   jwksCache.set(teamDomain, entry);
@@ -48,14 +61,29 @@ async function loadKeys(teamDomain) {
 async function keyFor(teamDomain, kid) {
   let entry = jwksCache.get(teamDomain);
   const stale = !entry || Date.now() - entry.at > JWKS_TTL_MS;
-  if (stale) entry = await loadKeys(teamDomain);
-  if (!entry.keys.has(kid)) entry = await loadKeys(teamDomain); // rotation
+  if (stale) {
+    entry = await loadKeys(teamDomain);
+    lastRotationRefetchAt.set(teamDomain, Date.now());
+  } else if (!entry.keys.has(kid)) {
+    const lastRefetch = lastRotationRefetchAt.get(teamDomain) || 0;
+    if (Date.now() - lastRefetch > JWKS_ROTATION_MIN_INTERVAL_MS) {
+      lastRotationRefetchAt.set(teamDomain, Date.now());
+      entry = await loadKeys(teamDomain); // rotation
+    }
+  }
   const key = entry.keys.get(kid);
   if (!key) throw new Error(`no signing key for kid ${kid}`);
   return key;
 }
 
 export async function verifyAccessJwt(token, { teamDomain, aud, now = Date.now() }) {
+  if (typeof teamDomain !== "string" || teamDomain.length === 0) {
+    throw new Error("verifyAccessJwt requires a non-empty teamDomain");
+  }
+  if (typeof aud !== "string" || aud.length === 0) {
+    throw new Error("verifyAccessJwt requires a non-empty aud");
+  }
+
   const parts = String(token || "").split(".");
   if (parts.length !== 3) throw new Error("malformed token");
   const [headerB64, payloadB64, sigB64] = parts;
