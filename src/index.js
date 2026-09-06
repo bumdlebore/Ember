@@ -1,7 +1,7 @@
 import { getIdentity, JwksUnavailable } from "./access.js";
 import { listEntries, upsertEntries } from "./entries.js";
 import HTML from "../public/index.html";
-import SW from "../public/sw.js";
+import SW from "../public/sw.js.txt";
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -22,6 +22,21 @@ export default {
           "Cache-Control": "no-cache",
         },
       });
+    }
+
+    // "PENDING" is the placeholder committed in wrangler.toml before the Cloudflare
+    // Access application exists. verifyAccessJwt's guard only rejects empty/non-string
+    // values, so "PENDING" passes it, the Worker then tries to fetch
+    // https://PENDING/cdn-cgi/access/certs, that throws, and every request gets mapped
+    // to a 503 "auth temporarily unavailable" — indistinguishable from a real Cloudflare
+    // outage. Fail loudly and specifically instead, before touching D1 or serving any
+    // journal data.
+    const accessNotConfigured = (v) => typeof v !== "string" || v.length === 0 || v === "PENDING";
+    if (accessNotConfigured(env.ACCESS_TEAM_DOMAIN) || accessNotConfigured(env.ACCESS_AUD)) {
+      return json(
+        { error: "Access is not configured: ACCESS_TEAM_DOMAIN/ACCESS_AUD still set to PENDING in wrangler.toml" },
+        500
+      );
     }
 
     let identity;

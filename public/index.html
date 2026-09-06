@@ -796,7 +796,12 @@ $("#impfile").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
   const rd=new FileReader();rd.onload=()=>{try{const arr=JSON.parse(rd.result);
     if(!Array.isArray(arr))throw 0;
     arr.forEach((e,i)=>{if(!e.id)e.id="imp"+Date.now()+i;
-      if(typeof e.u!=="number")e.u=Date.parse(e.d)||Date.now();if(e.deleted==null)e.deleted=0;});
+      // Imported entries may come from a backup with no `u` field. `e.d` is the
+      // smoke date, not a sync timestamp — deriving `u` from it back-dates the
+      // entry into the past, so it looks already-synced and pushSync() below
+      // never uploads it (dirty filters on u > pushed) and it never comes back
+      // on a pull either. Always stamp missing `u` with "now" so it's dirty.
+      if(typeof e.u!=="number")e.u=Date.now();if(e.deleted==null)e.deleted=0;});
     data=arr;save();fillDatalists();renderAll();toast("Imported "+arr.length+" entries");
     pushSync();switchTab("palate");}catch(e){toast("Couldn't read that file");}};rd.readAsText(f);};
 
@@ -814,6 +819,18 @@ document.addEventListener("click",e=>{const en=e.target.closest(".entry");if(en)
 function renderAll(){renderPalate();renderJournal();}
 
 /* ============ SYNC (fixed backend — Cloudflare Worker + D1) ============ */
+/* Known limitations:
+   - Cross-device clock skew. `cursor` is a high-water mark over client-supplied
+     `u = Date.now()`. If one device's clock runs fast, its entries carry a `u`
+     in the future. Another device pulls those, advances its own cursor past
+     that future timestamp, and then its own newly-created entries — with a
+     correct, lower `u` — fall below that cursor. Those entries upload to D1
+     fine but the server never returns them to the first device on a pull: the
+     entry exists server-side and is permanently invisible to that device.
+     This is a real gap, not something the app works around. The actual fix is
+     a server-assigned `u` (set in the Worker/D1 write path, not trusted from
+     the client) so the cursor is monotonic regardless of any device's clock.
+     Do not attempt to patch this from the client side; it isn't fixable there. */
 const CKEY="ember.cursor", PKEY="ember.pushed";
 let cursor=+(localStorage.getItem(CKEY)||0);
 let pushed=+(localStorage.getItem(PKEY)||0);
@@ -857,6 +874,11 @@ async function syncNow(silent){
 
     const out=await apiFetch("/api/entries?since="+cursor);
     mergeServer(out.entries||[]);
+    // cursor is a high-water mark over client-supplied `u`. If this device's
+    // clock (or another device's) runs fast, advancing past a future-dated `u`
+    // can permanently hide a later, correctly-timestamped entry from some
+    // device — see "Known limitations" above. Not fixed here; needs a
+    // server-assigned `u`.
     cursor=out.cursor||cursor;
     pushed=maxDirty;
     account=out.email||"";

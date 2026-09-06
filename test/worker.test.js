@@ -102,22 +102,32 @@ afterEach(() => {
 });
 
 describe("worker routing", () => {
-  it("refuses the app shell without an Access assertion", async () => {
+  // These four tests dispatch through SELF.fetch, which — per the comment atop
+  // this file — runs against the worker's own snapshot of `env`, i.e. the
+  // literal committed wrangler.toml values (ACCESS_TEAM_DOMAIN/ACCESS_AUD are
+  // still "PENDING" there, since the real Cloudflare Access application does
+  // not exist yet). That means every one of these requests now hits the
+  // Finding 4 "Access not configured" guard before auth is even considered,
+  // and gets 500 instead of the 403 they'd get once Access is really wired
+  // up. That's still a refusal — no app shell, no API data, no D1 access —
+  // it's just a more specific one. The 500-specific case is covered directly
+  // (with a real configured domain) in "worker routing — authenticated".
+  it("refuses the app shell — Access is not configured (PENDING) in committed config", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(500);
   });
 
-  it("refuses the API without an Access assertion", async () => {
+  it("refuses the API — Access is not configured (PENDING) in committed config", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries");
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(500);
     expect(res.headers.get("Content-Type")).toMatch(/application\/json/);
   });
 
-  it("refuses a forged assertion", async () => {
+  it("refuses a forged assertion too — config guard fires before the token is even parsed", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries", {
       headers: { "Cf-Access-Jwt-Assertion": "forged.token.value" },
     });
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(500);
   });
 
   it("serves the service worker without auth so it can boot offline", async () => {
@@ -126,8 +136,35 @@ describe("worker routing", () => {
     expect(res.headers.get("Content-Type")).toMatch(/javascript/);
   });
 
+  it("serves the real service worker source at /sw.js, not a placeholder", async () => {
+    // Status and content-type alone would still pass against an empty or
+    // placeholder body. The esbuild/Text-rule resolution bug (fixed by
+    // renaming public/sw.js to public/sw.js.txt) could silently ship an
+    // empty string here while every other check stayed green.
+    const res = await SELF.fetch("https://ember.austinsego.com/sw.js");
+    const body = await res.text();
+    expect(body).toContain("ember-shell-v1");
+  });
+
   it("sets no-store on API responses", async () => {
+    // A request with no Access assertion only ever measures the 403 from
+    // forbidden() — that response would still carry no-store even if the
+    // authenticated success path lost the header, so this test could never
+    // fail. Point it at an authenticated request instead so it actually
+    // covers the response that matters.
+    const token = await mintJwt();
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Cache-Control")).toMatch(/no-store/);
+  });
+
+  it("still sets no-store on an unauthenticated API request (500 here — see comment above)", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries");
+    expect(res.status).toBe(500);
     expect(res.headers.get("Cache-Control")).toMatch(/no-store/);
   });
 });
@@ -287,6 +324,40 @@ describe("worker routing — authenticated", () => {
       })
     );
     expect(res.status).toBe(503);
+  });
+
+  it("returns 500, not 503, when Access is still set to the PENDING placeholder", async () => {
+    // ACCESS_TEAM_DOMAIN/ACCESS_AUD ship as "PENDING" in wrangler.toml until the
+    // Cloudflare Access application is created. Without a dedicated guard this
+    // reaches getIdentity, tries to fetch https://PENDING/cdn-cgi/access/certs,
+    // throws, and comes back as the same 503 a real Cloudflare outage would
+    // produce — hiding a config mistake behind an infra-outage-shaped error.
+    env.ACCESS_TEAM_DOMAIN = "PENDING";
+    env.ACCESS_AUD = "PENDING";
+    const token = await mintJwt();
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toMatch(/not configured/i);
+
+    // The unconfigured path must not touch D1 or leak journal data either.
+    const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM entries").first();
+    expect(row.n).toBe(0);
+  });
+
+  it("returns 500 for a missing (not just PENDING) Access config", async () => {
+    delete env.ACCESS_TEAM_DOMAIN;
+    const token = await mintJwt();
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.status).toBe(500);
   });
 
   it("clamps a negative since to 0", async () => {
