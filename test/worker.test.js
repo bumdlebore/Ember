@@ -360,6 +360,42 @@ describe("worker routing — authenticated", () => {
     expect(res.status).toBe(500);
   });
 
+  it("refuses /api/entries with no assertion at all — 403, not 500 and not 200", async () => {
+    const res = await callWorker(new Request("https://ember.austinsego.com/api/entries"));
+    expect(res.status).toBe(403);
+  });
+
+  it("refuses /api/entries with a forged/garbage assertion — 403", async () => {
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": "forged.token.value" },
+      })
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("refuses the app shell with no assertion — 403, and never serves the shell HTML", async () => {
+    const res = await callWorker(new Request("https://ember.austinsego.com/"));
+    expect(res.status).toBe(403);
+    // Prove journal content was not served, not merely that a status code came
+    // back: neither the shell marker header nor a distinctive string from the
+    // HTML itself should appear.
+    expect(res.headers.get("X-Ember-Shell")).toBeNull();
+    const body = await res.text();
+    expect(body).not.toContain("Ember");
+    expect(body).not.toContain("Cigar Journal");
+  });
+
+  it("refuses a validly-signed token whose aud does not match the configured AUD — 403", async () => {
+    const token = await mintJwt({ aud: ["some-other-application-aud"] });
+    const res = await callWorker(
+      new Request("https://ember.austinsego.com/api/entries", {
+        headers: { "Cf-Access-Jwt-Assertion": token },
+      })
+    );
+    expect(res.status).toBe(403);
+  });
+
   it("clamps a negative since to 0", async () => {
     // Table is empty (beforeEach recreates it), so listEntries echoes the
     // cursor it was given straight back when nothing matches. That makes an
