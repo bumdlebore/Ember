@@ -1,0 +1,20 @@
+name = "ember"
+main = "src/index.js"
+compatibility_date = "2026-09-05"
+compatibility_flags = ["nodejs_compat"]
+account_id = "86157a94d182660d93ba076e084b3884"
+workers_dev = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ember-journal"
+database_id = "2003872c-44f2-4c70-b3bf-50678e24fddb"
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html", "**/*.webmanifest"]
+fallthrough = true
+
+[vars]
+ACCESS_TEAM_DOMAIN = "PENDING"
+ACCESS_AUD = "PENDING"
