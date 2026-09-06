@@ -31,7 +31,7 @@ export async function upsertEntries(db, owner, entries) {
                  data = excluded.data,
                  u = excluded.u,
                  deleted = excluded.deleted
-               WHERE excluded.u > entries.u`;
+               WHERE excluded.u >= entries.u`;
 
   for (const entry of list) {
     if (!entry || typeof entry !== "object") { skipped++; continue; }

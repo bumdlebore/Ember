@@ -35,12 +35,13 @@ describe("upsertEntries", () => {
     expect(out.entries[0].u).toBe(200);
   });
 
-  it("applies an equal-u write idempotently", async () => {
+  it("an equal-u write overwrites, last writer wins", async () => {
     await upsertEntries(env.DB, A, [{ id: "e1", u: 100, l: "first" }]);
     await upsertEntries(env.DB, A, [{ id: "e1", u: 100, l: "second" }]);
     const out = await listEntries(env.DB, A, 0);
     expect(out.entries).toHaveLength(1);
     expect(out.entries[0].u).toBe(100);
+    expect(out.entries[0].l).toBe("second");
   });
 
   it("skips malformed rows but writes the rest", async () => {
