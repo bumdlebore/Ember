@@ -14,6 +14,11 @@ type = "Text"
 globs = ["**/*.html", "**/*.webmanifest"]
 fallthrough = true
 
+[[rules]]
+type = "Text"
+globs = ["public/sw.js"]
+fallthrough = true
+
 [vars]
 ACCESS_TEAM_DOMAIN = "PENDING"
 ACCESS_AUD = "PENDING"
