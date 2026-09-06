@@ -315,7 +315,6 @@
           <label class="fl" for="f-label">Blend / line</label>
           <input id="f-label" list="dl-label" placeholder="e.g. Serie V Melanio" autocomplete="off">
           <div class="prefill" id="prefill">✓ Filled details from a known blend — tweak anything</div>
-          <button class="btn ghost" id="lookup" style="margin-top:9px;font-size:13px;padding:9px 14px;width:auto">Look up online</button>
         </div>
         <div class="fgrid c2">
           <div class="field">
@@ -741,35 +740,6 @@ function tryPrefill(){
 $("#f-label").addEventListener("change",tryPrefill);
 $("#f-label").addEventListener("blur",tryPrefill);
 $("#f-brand").addEventListener("change",tryPrefill);
-
-/* live lookup via the Worker's /api/lookup */
-$("#lookup").onclick=async()=>{
-  const name=$("#f-label").value.trim(), brand=$("#f-brand").value.trim();
-  const note=$("#prefill");
-  if(!name&&!brand){toast("Type a blend or brand first");return;}
-  note.classList.remove("nomatch");note.classList.add("show");note.textContent="Searching the web…";
-  $("#lookup").disabled=true;
-  try{
-    const res=await fetch("/api/lookup",{method:"POST",credentials:"same-origin",
-      headers:{"Content-Type":"application/json"},body:JSON.stringify({brand,name})});
-    if(res.status===400){const e=await res.json().catch(()=>({}));
-      note.classList.add("nomatch");
-      note.textContent=e.error==="no_api_key"
-        ?"Add an ANTHROPIC_API_KEY secret to your Worker to enable lookup"
-        :"Type a blend or brand first";return;}
-    if(!res.ok)throw new Error(res.status);
-    const r=await res.json();
-    if(!r.found){note.classList.add("nomatch");note.textContent="No reliable match found online — fill it yourself";return;}
-    const setIf=(sel,val)=>{val=cleanLeaf(val);if(val&&!$(sel).value)$(sel).value=val;};
-    setIf("#f-origin",r.origin);setIf("#f-wrapper",r.wrapper);setIf("#f-binder",r.binder);
-    setIf("#f-body",r.body);setIf("#f-shape",r.shape);
-    if(r.filler&&!$("#f-filler").value)
-      $("#f-filler").value=(Array.isArray(r.filler)?r.filler:String(r.filler).split(",")).map(cleanLeaf).filter(Boolean).join(", ");
-    note.classList.remove("nomatch");
-    note.textContent="\u2713 Found online"+(r.source?" \u00B7 "+r.source:"")+" — filled the blanks";
-  }catch(e){note.classList.add("nomatch");note.textContent="Lookup failed — check your connection and try again";}
-  finally{$("#lookup").disabled=false;setTimeout(()=>note.classList.remove("show"),5000);}
-};
 
 /* backfill blank fields on existing entries from the catalog + your own history */
 $("#backfill").onclick=()=>{
