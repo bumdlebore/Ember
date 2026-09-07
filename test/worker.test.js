@@ -103,31 +103,38 @@ afterEach(() => {
 
 describe("worker routing", () => {
   // These four tests dispatch through SELF.fetch, which — per the comment atop
-  // this file — runs against the worker's own snapshot of `env`, i.e. the
-  // literal committed wrangler.toml values (ACCESS_TEAM_DOMAIN/ACCESS_AUD are
-  // still "PENDING" there, since the real Cloudflare Access application does
-  // not exist yet). That means every one of these requests now hits the
-  // Finding 4 "Access not configured" guard before auth is even considered,
-  // and gets 500 instead of the 403 they'd get once Access is really wired
-  // up. That's still a refusal — no app shell, no API data, no D1 access —
-  // it's just a more specific one. The 500-specific case is covered directly
-  // (with a real configured domain) in "worker routing — authenticated".
-  it("refuses the app shell — Access is not configured (PENDING) in committed config", async () => {
+  // this file — runs against the worker's own snapshot of `env`, i.e. whatever
+  // is actually committed in wrangler.toml. That means they can only assert
+  // invariants that hold for any valid deployed configuration, not behavior
+  // derived from particular config values: they check that an unauthenticated
+  // request is refused (403) and that no journal content leaks in the
+  // response body. The distinct 403-vs-500 and configured-vs-unconfigured
+  // paths are exercised in isolation by the callWorker() tests below, which
+  // mutate `env` directly.
+  const SHELL_MARKER = "Cigar Journal"; // from public/index.html's <title>; stable, distinctive to the app shell
+
+  it("refuses the app shell", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/");
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(403);
+    const body = await res.text();
+    expect(body).not.toContain(SHELL_MARKER);
   });
 
-  it("refuses the API — Access is not configured (PENDING) in committed config", async () => {
+  it("refuses the API", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries");
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(403);
     expect(res.headers.get("Content-Type")).toMatch(/application\/json/);
+    const body = await res.text();
+    expect(body).not.toContain(SHELL_MARKER);
   });
 
-  it("refuses a forged assertion too — config guard fires before the token is even parsed", async () => {
+  it("refuses a forged assertion too", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries", {
       headers: { "Cf-Access-Jwt-Assertion": "forged.token.value" },
     });
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(403);
+    const body = await res.text();
+    expect(body).not.toContain(SHELL_MARKER);
   });
 
   it("serves the service worker without auth so it can boot offline", async () => {
@@ -162,10 +169,12 @@ describe("worker routing", () => {
     expect(res.headers.get("Cache-Control")).toMatch(/no-store/);
   });
 
-  it("still sets no-store on an unauthenticated API request (500 here — see comment above)", async () => {
+  it("still sets no-store on an unauthenticated API request", async () => {
     const res = await SELF.fetch("https://ember.austinsego.com/api/entries");
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(403);
     expect(res.headers.get("Cache-Control")).toMatch(/no-store/);
+    const body = await res.text();
+    expect(body).not.toContain(SHELL_MARKER);
   });
 });
 
