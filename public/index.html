@@ -265,6 +265,8 @@
   #details summary::before{content:"▸ "}
   #details[open] summary::before{content:"▾ "}
   #details > .fgrid{margin-top:10px}
+  .actrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:6px 20px 12px}
+  .del{border:0;padding:8px 4px}
 </style>
 </head>
 <body>
@@ -694,13 +696,17 @@ function openDetail(id){
       ${fi?`<dt>filler</dt><dd>${esc(fi)}</dd>`:""}
     </dl>
     ${e.n?`<div class="dnotes">“${esc(e.n)}”</div>`:""}
-    <div class="delrow"><button class="del" id="delbtn">Delete entry</button></div>`;
+    <div class="actrow"><button class="btn ghost" id="editbtn">Edit</button>
+      <button class="btn ghost" id="againbtn">Smoke again</button></div>
+    <div class="delrow"><button class="del" id="delbtn">Delete</button></div>`;
   $("#scrim").classList.add("on");document.body.style.overflow="hidden";
   $("#closex").onclick=closeDetail;
+  $("#editbtn").onclick=()=>startEdit(id);
+  $("#againbtn").onclick=()=>smokeAgain(id);
   $("#delbtn").onclick=()=>{
     if(confirm("Delete this entry? This can't be undone.")){
       const t=data.find(x=>x.id===id);if(t){t.deleted=1;t.u=Date.now();}
-      save();closeDetail();renderAll();toast("Entry deleted");pushSync();}
+      save();closeDetail();if(editingId===id)clearForm();renderAll();toast("Entry deleted");pushSync();}
   };
 }
 function closeDetail(){$("#scrim").classList.remove("on");document.body.style.overflow="";}
@@ -846,7 +852,7 @@ $("#showdetails").onclick=()=>{$("#details").open=true;
 /* smoke-again chips: cigars logged more than once */
 function renderAgain(){
   const box=$("#again");
-  if($("#f-label").value.trim()||(typeof editingId!=="undefined"&&editingId)){box.innerHTML="";return;}
+  if($("#f-label").value.trim()||editingId){box.innerHTML="";return;}
   const reps=historyCigars().filter(h=>h.count>1).slice(0,6);
   box.innerHTML=reps.length?`<div class="fl">Smoke again</div><div class="chips">${
     reps.map((h,i)=>`<button type="button" class="chip againchip" data-i="${i}">${esc(h.e.l||h.e.b)}</button>`).join("")}</div>`:"";
@@ -861,12 +867,46 @@ function dateLabel(d){d=d||localToday();const t=localToday();
 $("#f-date").addEventListener("change",()=>{$("#datelabel").textContent=dateLabel($("#f-date").value);});
 let formDay=localToday();
 
+/* edit mode reuses the Log form; saving keeps the id and bumps u */
+let editingId=null;
+function setEditMode(id,title){
+  editingId=id;
+  $("#edithd").hidden=!id;$("#edithd").textContent=id?"Editing "+title:"";
+  $("#save").textContent=id?"Save changes":"Save";$("#cancel").hidden=!id;
+}
+function startEdit(id){
+  const e=data.find(x=>x.id===id);if(!e)return;
+  closeDetail();switchTab("log");clearForm();
+  $("#f-label").value=e.l||"";$("#f-brand").value=e.b||"";setLeaf(e);
+  $("#f-notes").value=e.n||"";$("#f-social").checked=!!e.s;
+  setRating(typeof e.r==="number"?e.r:null);
+  $("#f-date").value=e.d||localToday();$("#datelabel").textContent=dateLabel($("#f-date").value);
+  pickedLabel=e.l||"";setEditMode(id,e.l||e.b);
+  $("#details").open=true;renderSummary();renderAgain();renderUnrated();
+}
+function smokeAgain(id){
+  const e=data.find(x=>x.id===id);if(!e)return;
+  closeDetail();switchTab("log");clearForm();applyPick(e,"history");
+}
+function unratedRecent(){
+  const cutoff=localToday(new Date(Date.now()-14*864e5));
+  return live().filter(e=>typeof e.r!=="number"&&(e.d||"")>=cutoff)
+    .sort((a,b)=>(b.d||"").localeCompare(a.d||"")).slice(0,3);
+}
+function renderUnrated(){
+  const rows=editingId?[]:unratedRecent();
+  $("#unrated").innerHTML=rows.map(e=>`<button type="button" data-id="${esc(e.id)}">
+    <span>Unrated: ${esc(e.l||e.b)}, ${esc(fmtShort(e.d))}</span><b>Rate it</b></button>`).join("");
+  $$("#unrated button").forEach(b=>b.onclick=()=>startEdit(b.dataset.id));
+}
+$("#cancel").onclick=()=>{clearForm();renderUnrated();};
+
 function clearForm(){
   ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
     .forEach(id=>$("#"+id).value="");
   $("#f-body").value="";$("#f-social").checked=false;setRating(null);$("#ratechips-low").hidden=true;
   formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);
-  $("#details").open=false;pickedLabel=null;hideSugg();renderSummary();renderAgain();
+  $("#details").open=false;setEditMode(null);pickedLabel=null;hideSugg();renderSummary();renderAgain();
 }
 function formFields(){
   return {d:$("#f-date").value||localToday(),
@@ -879,9 +919,10 @@ function formFields(){
 $("#save").onclick=()=>{
   const f=formFields();
   if(!f.l&&!f.b){toast("Add a name first");$("#f-label").focus();return;}
-  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,...f};
-  data=[e,...data];save();fillDatalists();renderAll();clearForm();
-  toast("Saved · "+(e.l||e.b));pushSync();window.scrollTo({top:0});
+  const cur=editingId&&data.find(x=>x.id===editingId&&!x.deleted);
+  if(cur){Object.assign(cur,f,{u:Date.now()});toast("Saved changes · "+(f.l||f.b));}
+  else{data=[{id:"e"+Date.now(),u:Date.now(),deleted:0,...f},...data];toast("Saved · "+(f.l||f.b));}
+  save();fillDatalists();clearForm();renderAll();pushSync();window.scrollTo({top:0});
 };
 
 /* ============ EXPORT / IMPORT ============ */
@@ -919,7 +960,7 @@ $("#q").addEventListener("input",renderJournal);
 $("#sort").addEventListener("change",renderJournal);
 document.addEventListener("click",e=>{const en=e.target.closest(".entry");if(en)openDetail(en.dataset.id);});
 
-function renderAll(){renderPalate();renderJournal();renderAgain();}
+function renderAll(){renderPalate();renderJournal();renderAgain();renderUnrated();}
 
 /* ============ SYNC (fixed backend — Cloudflare Worker + D1) ============ */
 /* Known limitations:
