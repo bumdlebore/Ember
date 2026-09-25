@@ -1,12 +1,38 @@
 # Ember quick log Implementation Plan
 
+## Handoff — 2026-09-25 18:10 (Claude Code desktop on MacBook → claude01, Opus 5.5)
+
+- [ ] Resume: build Ember quick log from this plan on claude01. Tick this in Task 5 Step 5.
+
+**Goal:** Execute Tasks 1–5 below on branch `quick-log`, so logging in Ember beats the Cigar journal sheet.
+
+**Decisions made:** everything is in the spec (`docs/superpowers/specs/2026-09-25-ember-quick-log-design.md`). Ember has no vault or personal project folder. This repo is its only canonical record, so don't write Ember notes into Homelab files.
+
+**Current state**
+- verified: the spec and plan are approved by Austin. `origin` is `github.com/bumdlebore/Ember` (public), and `main` and `quick-log` are pushed.
+- verified on claude01: `npm ci`, then `npm test` passes (49 tests plus the wrangler dry-run, no Cloudflare login needed). `npm run test:ui -- baseline` passes, and `task2` fails as expected.
+- verified: none of Tasks 1–5 is started. `test/ui/` (the runner and the checks) is the only code added so far.
+- assumed: a claude01 Remote Control session has no access to the Mac's browser pane. The headless runner replaces it either way.
+
+**Next 3 actions**
+1. `cd ~/Projects/ember && git pull && npm ci`.
+2. Execute Task 1 with superpowers:executing-plans. Commit and push after each task.
+3. At Task 5 Step 2, stop and hand the deploy to Austin (Mac only).
+
+**Open questions:** execution method. Austin's kickoff message says `native` or `subagents`. If it's missing, use native, because Tasks 2–4 share one file.
+
+**Files touched so far:** `docs/superpowers/specs/2026-09-25-ember-quick-log-design.md`, `docs/superpowers/plans/2026-09-25-ember-quick-log.md`, `test/ui/checks.mjs`, `test/ui/checks/*.js`, `package.json`, `package-lock.json`, `.gitignore`, `.claude/launch.json`
+
+**Credentials needed:** GitHub via `gh` on claude01 (already logged in as `bumdlebore`, and git uses it through `gh auth setup-git`). The Cloudflare wrangler login lives on the Mac only, and Austin runs the deploy.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make logging a cigar in Ember faster than opening the Cigar journal sheet, and make the numbers trustworthy.
 
 **Architecture:** All UI stays in the single file `public/index.html`, which the Worker serves at `/`. The Worker gains three authenticated static routes: the manifest and two kinds of icon. The Log screen becomes the home screen, with a custom suggestion list, rating chips, and collapsed details. Edit, smoke again, and a rate-later strip reuse that same form.
 
-**Tech Stack:** Cloudflare Workers, D1, vitest with `@cloudflare/vitest-pool-workers`, wrangler 4, vanilla JS/CSS, and `rsvg-convert` (Homebrew) for icons.
+**Tech Stack:** Cloudflare Workers, D1, vitest with `@cloudflare/vitest-pool-workers`, wrangler 4, vanilla JS/CSS, `rsvg-convert` for icons (Debian `librsvg2-bin`, Homebrew `librsvg`), and `playwright-core` driving the system Chromium for UI checks.
 
 **Spec:** `docs/superpowers/specs/2026-09-25-ember-quick-log-design.md`
 
@@ -19,7 +45,8 @@
 - The unrated strip covers the last 14 days, shows at most 3 entries, and applies to `typeof r !== "number"`.
 - At most 8 suggestions and at most 6 smoke-again chips (cigars logged more than once).
 - Every text input, select, and textarea is at least 16px, so iOS doesn't zoom on focus.
-- The shell is zsh. Use `/bin/zsh`-safe commands, with no `read -p`.
+- Run every command from the repo root. Commands are POSIX `sh`-safe (the Mac shell is zsh), with no `read -p`.
+- After each task's commit, run `git push` so `origin/quick-log` shows progress.
 - Commit messages end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - The branch is `quick-log`. Don't commit to `main`.
 
@@ -33,14 +60,17 @@
 
 ## How the UI checks run
 
-The UI logic lives inside `index.html`, so it isn't imported by vitest. Each UI task ends with a JS block run in the Claude browser pane against the local static server:
+The UI logic lives inside `index.html`, so vitest doesn't import it. Each UI task's checks live in `test/ui/checks/<task>.js` (already committed). `test/ui/checks.mjs` runs them:
 
-1. `preview_start` with name `ember-static` (from `.claude/launch.json`). It serves `public/` at `http://localhost:8787`.
-2. `resize_window` with preset `mobile` (375×812).
-3. Reset to seed data: run `localStorage.clear(); location.href = "http://localhost:8787/index.html"`, then wait 1 second.
-4. Paste the task's check block into `javascript_tool`. **Every key must be `true`.**
+```bash
+npm run test:ui -- task3
+```
 
-On the static server, sync fails with a 404 and the pill shows "⚠ Sign in". That's expected here.
+The runner serves `public/` on a random localhost port and opens it in headless Chromium at 375×812 with a fresh profile, so the seed data loads and no reset is needed. It prints the result object and saves `test/ui/out/<task>.png`, so look at the screenshot. It exits 1 if any key isn't `true`, if the block throws, or if the page raises an uncaught error. `npm run test:ui -- baseline` is the runner's self-test and passes on any build.
+
+Sync fails with a 404 under the runner, so the sync pill shows "⚠ Sign in". That's expected.
+
+The checks are the spec for each UI task. If one looks wrong, stop and say so rather than editing it to pass.
 
 ---
 
@@ -135,7 +165,7 @@ Expected: the new tests fail. Authenticated manifest and icon requests get 404, 
 - [ ] **Step 4: Render the three PNGs.**
 
 ```bash
-cd /usr/local/ember/public && for s in 180 192 512; do rsvg-convert -w $s -h $s icon-source.svg -o icon-$s.png; done && file icon-*.png
+(cd public && for s in 180 192 512; do rsvg-convert -w $s -h $s icon-source.svg -o icon-$s.png; done && file icon-*.png)
 ```
 
 Expected: three lines, each reading `PNG image data, <s> x <s>`.
@@ -231,7 +261,7 @@ Expected: all vitest tests pass, and `wrangler deploy --dry-run` lists the uploa
 - [ ] **Step 10: Commit.**
 
 ```bash
-cd /usr/local/ember && git add public/icon-source.svg public/icon-*.png public/manifest.webmanifest src/index.js wrangler.toml public/index.html test/worker.test.js && git commit -q -m "feat: serve manifest and icons for home-screen install
+git add public/icon-source.svg public/icon-*.png public/manifest.webmanifest src/index.js wrangler.toml public/index.html test/worker.test.js && git commit -q -m "feat: serve manifest and icons for home-screen install
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -246,7 +276,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces: `localToday(d = new Date()) → "YYYY-MM-DD"` (local calendar date), `esc(s) → string` (HTML-escaped), and the constants `SHRINK_K = 5` and `HEADLINE_MIN_N = 5`. Tasks 3 and 4 use `localToday` and `esc`.
 
-- [ ] **Step 1: Run the Task 2 check block (below) on the current code and confirm it fails.** Expected: it throws `ReferenceError: localToday is not defined`.
+- [ ] **Step 1: Confirm the checks fail on the current code.**
+
+Run: `npm run test:ui -- task2`
+Expected: `check threw: ... ReferenceError: localToday is not defined`, `RESULT: FAIL`.
 
 - [ ] **Step 2: Add the helpers.** In the `HELPERS` section, directly after `function uniq(arr){...}`, add:
 
@@ -304,34 +337,15 @@ In the same `innerHTML` template, change `<b>${bd.k}</b>` to `<b>${esc(bd.k)}</b
   - In `openDetail`, do the same for `e.l||e.b||"Untitled"`, `e.b`, `e.o`, `e.bd`, `e.sh`, `e.w`, `e.wn`, `e.bn`, `fi`, and `e.n`.
   - In `fillDatalists`, change `${v.replace(/"/g,'&quot;')}` to `${esc(v)}`.
 
-- [ ] **Step 7: Run the Task 2 check block and confirm every key is `true`.**
+- [ ] **Step 7: Run the checks and confirm they pass.**
 
-```js
-(() => {
-  const r = {};
-  r.today2030 = localToday(new Date(2026,8,25,20,30)) === "2026-09-25";
-  r.today2359 = localToday(new Date(2026,8,25,23,59)) === "2026-09-25";
-  r.dateField = document.querySelector("#f-date").value === localToday();
-  r.esc = esc(`<b>"&'`) === "&lt;b&gt;&quot;&amp;&#39;";
-  const line = document.querySelector("#verdict .line").textContent;
-  r.headlineNicaragua = /Nicaragua/.test(line);
-  r.headlineSanAndres = /San Andres/.test(line);
-  r.noHonduras = !/Honduras/.test(line);
-  data = [{id:"x1",u:1,deleted:0,d:"2026-09-01",b:"<i>Evil</i>",
-    l:"<img src=x onerror=window.__xss=1>",r:4,n:"a < b & c",fi:[]}, ...data];
-  renderAll();
-  const nm = document.querySelector('#list .entry[data-id="x1"] .nm');
-  r.escapedRow = !window.__xss && !!nm && nm.textContent.includes("<img");
-  return r;
-})()
-```
-
-Then reset: `localStorage.clear(); location.reload()`.
+Run: `npm run test:ui -- task2`
+Expected: every key `true`, `RESULT: PASS`. The checks cover local dates at 20:30 and 23:59, `esc()`, the Nicaragua/San Andres headline, and a markup-laden entry rendering as text. See `test/ui/checks/task2.js`.
 
 - [ ] **Step 8: Commit.**
 
 ```bash
-cd /usr/local/ember && git add public/index.html && git commit -q -m "fix: local dates, escaped rendering, shrunk palate rankings
+git add public/index.html && git commit -q -m "fix: local dates, escaped rendering, shrunk palate rankings
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -355,7 +369,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `fmtShort(d) → "Sep 19"`, `dateLabel(d)`, `clearForm()`
   - element ids `#unrated`, `#edithd`, `#cancel`, and `#details`
 
-- [ ] **Step 1: Run the Task 3 check block (end of task) on the current code and confirm it fails.** Expected: `opensOnLog: false`, and it throws at the missing `.tabbar` or `.rchip`.
+- [ ] **Step 1: Confirm the checks fail on the current code.**
+
+Run: `npm run test:ui -- task3`
+Expected: `RESULT: FAIL`. It throws on the missing `.rchip`, or reports `opensOnLog: false`.
 
 - [ ] **Step 2: Header.** Delete the tagline line `<div class="tag">A journal for the leaf — and what it tells you about your palate.</div>` and the `.tag{...}` CSS rule. Change `.brand h1{font-size:30px;font-weight:600}` to `.brand h1{font-size:24px;font-weight:600}`.
 
@@ -683,60 +700,19 @@ Confirm nothing points at removed code:
 Run: `grep -nE "buildStars|paintStars|#stars|#rateval|#prefill|dl-label|#clear\b|switchTab\(\"journal\"\)" public/index.html`
 Expected: no output.
 
-- [ ] **Step 10: Run the Task 3 check block after a reset, and confirm every key is `true`.**
+- [ ] **Step 10: Run the checks and confirm they pass.**
 
-```js
-(() => {
-  const r = {}, inp = $("#f-label");
-  r.opensOnLog = document.querySelector("#log").classList.contains("on");
-  r.tabOrder = [...document.querySelectorAll(".tabbar button")].map(b=>b.dataset.tab).join() === "log,journal,palate";
-  const vals = [3.5,3.75,4,4.25,4.5,4.75,5,2,2.25,2.5,2.75,3,3.25];
-  r.chipsRoundTrip = vals.every(v=>{const b=document.querySelector(`.rchip[data-r="${v}"]`);
-    if(!b)return false;b.click();const ok=rating===v;b.click();return ok&&rating===null;});
-  $("#ratechips-low").hidden = true;
-  r.saveAboveFold = $("#save").getBoundingClientRect().bottom <= document.querySelector(".tabbar").getBoundingClientRect().top;
-  r.noZoom = [...document.querySelectorAll("#log input:not([type=checkbox]):not([type=date]),#log select,#log textarea")]
-    .every(el=>parseFloat(getComputedStyle(el).fontSize)>=16);
-  r.dateLabel = /^Today, /.test($("#datelabel").textContent);
-  inp.value = "melanio"; inp.dispatchEvent(new Event("input"));
-  const first = document.querySelector("#sugg .sg");
-  r.historyFirst = !!first && /Melanio/.test(first.textContent) && /Oliva/.test(first.textContent);
-  const md = new MouseEvent("mousedown",{bubbles:true,cancelable:true}); first.dispatchEvent(md);
-  r.keepsFocus = md.defaultPrevented;
-  first.click();
-  r.historyFill = $("#f-brand").value==="Oliva" && $("#f-wrapper").value==="San Andres"
-    && $("#f-body").value==="Med-Full" && $("#f-filler").value==="Nicaraguan";
-  r.summary = !$("#summary").hidden && /^Oliva · San Andres Maduro · Nicaraguan · Med-Full$/.test($("#summarytext").textContent);
-  inp.value = "Padron 1964"; inp.dispatchEvent(new Event("input"));
-  r.retypeClears = $("#f-brand").value==="" && $("#f-wrapper").value==="" && $("#summary").hidden;
-  inp.value = "serie g maduro"; inp.dispatchEvent(new Event("input"));
-  const cat = [...document.querySelectorAll("#sugg .sg")].find(b=>/catalog/.test(b.textContent));
-  cat && cat.click();
-  r.catalogSplit = $("#f-brand").value==="Oliva" && $("#f-label").value==="Serie G Maduro";
-  clearForm();
-  r.againChips = [...document.querySelectorAll(".againchip")].map(b=>b.textContent).slice(0,3).join("|")
-    === "Encore|M81|Serie V Melanio Maduro";
-  document.querySelector(".againchip").click();
-  document.querySelector('.rchip[data-r="4.75"]').click();
-  const before = data.length; $("#save").click();
-  r.saved = data.length===before+1 && data[0].r===4.75 && data[0].l==="Encore" && data[0].d===localToday();
-  r.staysOnLog = document.querySelector("#log").classList.contains("on");
-  r.formCleared = $("#f-label").value==="" && rating===null;
-  $("#f-date").value = "2020-01-01"; formDay = "2020-01-01";
-  document.dispatchEvent(new Event("visibilitychange"));
-  r.dayRolls = $("#f-date").value===localToday();
-  return r;
-})()
-```
+Run: `npm run test:ui -- task3`
+Expected: every key `true`, `RESULT: PASS`. See `test/ui/checks/task3.js`. It covers the rating round-trip for all 13 values, Save above the tab bar, 16px inputs, history and catalog picks, the retype clearing stale leaf, the smoke-again order `Encore|M81|Serie V Melanio Maduro`, save staying on Log, and the overnight date roll.
 
-Also take a 375×812 screenshot and look at it. Save, the rating chips, and the name field should be visible without scrolling, and nothing should overlap the tab bar. Then reset.
+Then open `test/ui/out/task3.png`, rerun with `--shot='clearForm()'` so the screenshot shows the empty form, and confirm the name field, rating chips, and Save are all visible with nothing under the tab bar.
 
 - [ ] **Step 11: Run `npm test`.** Expected: pass. The shell test still finds the manifest link.
 
 - [ ] **Step 12: Commit.**
 
 ```bash
-cd /usr/local/ember && git add public/index.html && git commit -q -m "feat: quick-log home screen with rating chips and suggestions
+git add public/index.html && git commit -q -m "feat: quick-log home screen with rating chips and suggestions
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -752,7 +728,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: everything Task 3 produces, plus `openDetail(id)`, `closeDetail()`, `switchTab(name)`, and `fmtShort(d)`.
 - Produces: `let editingId`, `startEdit(id)`, `smokeAgain(id)`, `unratedRecent()`, and `renderUnrated()`.
 
-- [ ] **Step 1: Run the Task 4 check block (end of task) and confirm it fails.** Expected: `stripRecentOnly: false`, because `#unrated` is empty.
+- [ ] **Step 1: Confirm the checks fail on the current code.**
+
+Run: `npm run test:ui -- task4`
+Expected: `RESULT: FAIL`, with `stripRecentOnly: false` because `#unrated` is empty.
 
 - [ ] **Step 2: Add edit state and the two actions.** Put this directly above `function clearForm(){`:
 
@@ -857,49 +836,17 @@ Add this CSS at the end of the `<style>` block:
 function renderAll(){renderPalate();renderJournal();renderAgain();renderUnrated();}
 ```
 
-- [ ] **Step 7: Run the Task 4 check block after a reset, and confirm every key is `true`.**
+- [ ] **Step 7: Run the checks and confirm they pass.**
 
-```js
-(() => {
-  const r = {}, now = Date.now();
-  data = [
-    {id:"u-new",u:now-5000,deleted:0,d:localToday(new Date(now-3*864e5)),b:"EP Carrillo",l:"Encore Black",r:null,s:0,fi:[],n:""},
-    {id:"u-old",u:now-5000,deleted:0,d:localToday(new Date(now-30*864e5)),b:"CAO",l:"Old One",r:null,s:0,fi:[],n:""},
-    ...data];
-  save(); renderAll();
-  const strip = [...document.querySelectorAll("#unrated button")];
-  r.stripRecentOnly = strip.length===1 && /Encore Black/.test(strip[0].textContent);
-  r.seedUnratedHidden = !/Hemingway/.test($("#unrated").textContent);
-  strip[0].click();
-  r.editMode = editingId==="u-new" && $("#save").textContent==="Save changes" && !$("#cancel").hidden
-    && /Editing Encore Black/.test($("#edithd").textContent) && $("#unrated").children.length===0;
-  document.querySelector('.rchip[data-r="4.25"]').click(); $("#f-notes").value = "Edited note";
-  const n0 = data.length; $("#save").click();
-  const e = data.find(x=>x.id==="u-new");
-  r.editKeepsId = data.length===n0 && e.r===4.25 && e.n==="Edited note" && e.u>now-5000;
-  r.exitEdit = editingId===null && $("#save").textContent==="Save" && $("#cancel").hidden;
-  r.stripEmptied = $("#unrated").children.length===0;
-  openDetail("u-new"); document.querySelector("#againbtn").click();
-  r.againPrefill = $("#f-label").value==="Encore Black" && $("#f-brand").value==="EP Carrillo"
-    && rating===null && $("#f-notes").value==="" && editingId===null && !$("#scrim").classList.contains("on");
-  const n1 = data.length; $("#save").click();
-  r.againNewId = data.length===n1+1 && data[0].id!=="u-new" && data[0].d===localToday();
-  openDetail("u-new"); document.querySelector("#editbtn").click();
-  r.editFromSheet = editingId==="u-new" && $("#details").open && $("#f-date").value===e.d && rating===4.25;
-  $("#cancel").click();
-  r.cancelResets = editingId===null && $("#f-label").value==="" && rating===null;
-  return r;
-})()
-```
-
-Then screenshot the detail sheet at 375×812 and confirm the Edit and Smoke again buttons sit side by side. Reset.
+Run: `npm run test:ui -- task4 --shot='openDetail("u-new")'`
+Expected: every key `true`, `RESULT: PASS`. See `test/ui/checks/task4.js`. Open `test/ui/out/task4.png` and confirm the detail sheet shows Edit and Smoke again side by side.
 
 - [ ] **Step 8: Run `npm test`.** Expected: pass.
 
 - [ ] **Step 9: Commit.**
 
 ```bash
-cd /usr/local/ember && git add public/index.html && git commit -q -m "feat: edit, smoke again, and rate-later strip
+git add public/index.html && git commit -q -m "feat: edit, smoke again, and rate-later strip
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
@@ -910,14 +857,17 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:** none changed unless the phone check forces the `display: "browser"` fallback. In that case, change `public/manifest.webmanifest` and the one test expectation.
 
-- [ ] **Step 1: Whole-branch review.** Dispatch one reviewer on the most capable model over `git diff main...quick-log`. Fix anything it confirms, then re-run `npm test` and the Task 3 and Task 4 check blocks.
+- [ ] **Step 1: Whole-branch review.** Use superpowers:requesting-code-review with one reviewer on the most capable model over `git diff main...quick-log`. Fix anything it confirms, then rerun `npm test` and `npm run test:ui -- task2`, `task3`, and `task4`. Push.
 
-- [ ] **Step 2: Ask Austin before deploying.** Deploying replaces the live app at ember.austinsego.com. On a yes:
+- [ ] **Step 2: Hand the deploy to Austin.** Deploying replaces the live app at ember.austinsego.com, and only the Mac holds a wrangler login. claude01 has no Cloudflare credential by design. Tell Austin the branch is pushed and give him this to run on the Mac:
 
-Run: `cd /usr/local/ember && npm run deploy`
-Expected: wrangler prints the `ember.austinsego.com` custom domain and a version id.
+```bash
+cd /usr/local/ember && git fetch && git checkout quick-log && git pull && npm ci && npm test && npm run deploy
+```
 
-- [ ] **Step 3: Look up the Access session setting.** Read Cloudflare's current docs for application session duration (the Cloudflare docs MCP tool `search_cloudflare_documentation`). Then give Austin the exact dashboard path for `ember.austinsego.com` as numbered steps, with a recommended value.
+Expected: wrangler prints the `ember.austinsego.com` custom domain and a version id. Wait for him to confirm before Step 4.
+
+- [ ] **Step 3: Look up the Access session setting.** Read Cloudflare's current docs for Access application session duration (WebFetch on developers.cloudflare.com). Then give Austin the exact dashboard path for `ember.austinsego.com` as numbered steps, with a recommended value.
 
 - [ ] **Step 4: Austin's phone check (about 5 minutes).** Give him these steps:
   1. Open ember.austinsego.com in Safari and sign in.
@@ -925,6 +875,6 @@ Expected: wrangler prints the `ember.austinsego.com` custom domain and a version
   3. Open it from the home screen. The Log screen should appear, and the pill should read "● Synced".
   4. Log a smoke with a quarter rating, then open it in Journal → Edit → Save changes.
 
-  If step 3 lands on a login page that won't return to the app, switch `"display": "standalone"` to `"display": "browser"` in the manifest, update the `toBe("standalone")` test expectation, then run `npm test`, commit, and redeploy.
+  If step 3 lands on a login page that won't return to the app, switch `"display": "standalone"` to `"display": "browser"` in the manifest, update the `toBe("standalone")` test expectation, then run `npm test`, commit, push, and ask Austin to rerun the Step 2 deploy command.
 
-- [ ] **Step 5: Finish the branch.** Use superpowers:finishing-a-development-branch to merge `quick-log` into `main`.
+- [ ] **Step 5: Finish the branch.** Use superpowers:finishing-a-development-branch to merge `quick-log` into `main` and push `main`. Then tick the resume pointer in the Handoff block at the top of this file.
