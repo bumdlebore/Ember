@@ -10,16 +10,15 @@
 
 **Decisions made:** everything is in the spec (`docs/superpowers/specs/2026-09-25-ember-quick-log-design.md`). Ember has no vault or personal project folder. This repo is its only canonical record, so don't write Ember notes into Homelab files.
 
-**Current state**
-- verified: the spec and plan are approved by Austin. `origin` is `github.com/bumdlebore/Ember` (public), and `main` and `quick-log` are pushed.
-- verified on claude01: `npm ci`, then `npm test` passes (49 tests plus the wrangler dry-run, no Cloudflare login needed). `npm run test:ui -- baseline` passes, and `task2` fails as expected.
-- verified: none of Tasks 1–5 is started. `test/ui/` (the runner and the checks) is the only code added so far.
-- assumed: a claude01 Remote Control session has no access to the Mac's browser pane. The headless runner replaces it either way.
+**Current state** (updated 2026-09-25 18:40, Mac)
+- verified: Tasks 1–4 and the Task 5 Step 1 review fixes are pushed (`cbbee91`). Rerun on the Mac: `npm test` passes 56/56, and `test:ui` passes for baseline and tasks 2–4.
+- verified: Task 5 Step 2 is done. Version `f603a820-8726-4ab4-9ad1-e111466ac8e1` was deployed from the Mac at 18:37, and Access still returns 302 for unauthenticated requests to `/` and `/manifest.webmanifest`.
+- assumed: the iOS home-screen login round-trip works. Task 5 Step 4 decides it.
 
 **Next 3 actions**
-1. `cd ~/Projects/ember && git pull && npm ci`.
-2. Execute Task 1 with superpowers:executing-plans. Commit and push after each task.
-3. At Task 5 Step 2, stop and hand the deploy to Austin (Mac only).
+1. Austin raises the Ember Access application's session duration (Task 5 Step 3; the steps are in the Mac session's reply).
+2. Austin runs the phone check (Task 5 Step 4). If the login doesn't return to the app, apply the `display: "browser"` fallback.
+3. Finish the branch (Task 5 Step 5): merge PR #1 into `main`.
 
 **Open questions:** execution method. Austin's kickoff message says `native` or `subagents`. If it's missing, use native, because Tasks 2–4 share one file.
 
