@@ -2,6 +2,12 @@ import { getIdentity, JwksUnavailable } from "./access.js";
 import { listEntries, upsertEntries } from "./entries.js";
 import HTML from "../public/index.html";
 import SW from "../public/sw.js.txt";
+import MANIFEST from "../public/manifest.webmanifest";
+import ICON_180 from "../public/icon-180.png";
+import ICON_192 from "../public/icon-192.png";
+import ICON_512 from "../public/icon-512.png";
+
+const ICONS = { "/icon-180.png": ICON_180, "/icon-192.png": ICON_192, "/icon-512.png": ICON_512 };
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -57,6 +63,28 @@ export default {
           "Content-Type": "text/html; charset=utf-8",
           "Cache-Control": "no-store",
           "X-Robots-Tag": "noindex",
+          "X-Ember-Shell": "1",
+        },
+      });
+    }
+
+    // Install files sit behind Access like the shell. X-Ember-Shell marks them
+    // as coming from this Worker (not an Access interstitial), so the service
+    // worker's existing rule caches them.
+    if (url.pathname === "/manifest.webmanifest") {
+      return new Response(MANIFEST, {
+        headers: {
+          "Content-Type": "application/manifest+json",
+          "Cache-Control": "no-cache",
+          "X-Ember-Shell": "1",
+        },
+      });
+    }
+    if (ICONS[url.pathname]) {
+      return new Response(ICONS[url.pathname], {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public, max-age=86400",
           "X-Ember-Shell": "1",
         },
       });

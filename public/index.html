@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#1c1611">
+<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ember">
 <title>Ember — Cigar Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +37,7 @@
   .wrap{max-width:880px;margin:0 auto;padding:0 16px 120px}
 
   /* Header */
-  header{padding:26px 16px 14px;max-width:880px;margin:0 auto}
+  header{padding:calc(14px + env(safe-area-inset-top)) 16px 8px;max-width:880px;margin:0 auto}
   .brand{display:flex;align-items:baseline;gap:12px}
   .mark{width:13px;height:13px;border-radius:50%;align-self:center;
     background:radial-gradient(circle at 35% 30%, var(--ember2), var(--ember) 55%, #7a2f10 100%);
