@@ -2,6 +2,7 @@
 (() => {
   const r = {}, inp = $("#f-label");
   r.opensOnLog = document.querySelector("#log").classList.contains("on");
+  r.lowCollapsed = getComputedStyle($("#ratechips-low")).display === "none";
   r.tabOrder = [...document.querySelectorAll(".tabbar button")].map(b=>b.dataset.tab).join() === "log,journal,palate";
   const vals = [3.5,3.75,4,4.25,4.5,4.75,5,2,2.25,2.5,2.75,3,3.25];
   r.chipsRoundTrip = vals.every(v=>{const b=document.querySelector(`.rchip[data-r="${v}"]`);

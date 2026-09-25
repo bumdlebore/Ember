@@ -42,7 +42,7 @@
   .mark{width:13px;height:13px;border-radius:50%;align-self:center;
     background:radial-gradient(circle at 35% 30%, var(--ember2), var(--ember) 55%, #7a2f10 100%);
     box-shadow:0 0 12px 1px #e07a3766, 0 0 26px 4px #e07a3722;flex:none}
-  .brand h1{font-size:30px;font-weight:600}
+  .brand h1{font-size:24px;font-weight:600}
   .brand .sub{font-size:13px;color:var(--mute);
     font-family:'JetBrains Mono',monospace;letter-spacing:.02em}
   .rightgrp{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -53,18 +53,15 @@
   .syncpill.ok{color:var(--leaf);border-color:#4a5230}
   .syncpill.busy{color:var(--ember2);border-color:#5c3b1f}
   .syncpill.err{color:var(--bad);border-color:#5a2f24}
-  .tag{color:var(--ink2);font-size:14.5px;margin:8px 2px 0;font-style:italic;
-    font-family:'Fraunces',serif}
 
-  /* Tabs */
-  nav{position:sticky;top:0;z-index:30;background:linear-gradient(var(--bg) 70%, transparent);
-    padding:10px 16px 12px;max-width:880px;margin:0 auto}
-  .tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--line);
-    border-radius:12px;padding:4px}
+  /* Tabs — bottom bar, thumb reach */
+  nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--bg2);
+    border-top:1px solid var(--line2);padding:6px 12px calc(6px + env(safe-area-inset-bottom))}
+  .tabs{display:flex;gap:4px;max-width:560px;margin:0 auto}
   .tabs button{flex:1;appearance:none;border:0;background:transparent;color:var(--mute);
-    font:inherit;font-weight:600;font-size:14px;padding:9px 6px;border-radius:9px;
+    font:inherit;font-weight:600;font-size:14px;min-height:44px;border-radius:9px;
     cursor:pointer;transition:.15s;letter-spacing:.01em}
-  .tabs button[aria-selected=true]{background:var(--card2);color:var(--ink);box-shadow:var(--shadow)}
+  .tabs button[aria-selected=true]{background:var(--card2);color:var(--ink)}
   .tabs button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
 
   .panel{display:none;animation:fade .35s ease}
@@ -162,7 +159,7 @@
   label.fl{display:block;font-size:12px;color:var(--mute);margin:0 0 5px 2px;
     letter-spacing:.02em;font-weight:500}
   input,select,textarea{width:100%;background:var(--bg2);border:1px solid var(--line2);
-    color:var(--ink);font:inherit;font-size:15px;padding:11px 12px;border-radius:var(--rad-s);
+    color:var(--ink);font:inherit;font-size:16px;padding:11px 12px;border-radius:var(--rad-s);
     transition:.15s}
   textarea{resize:vertical;min-height:74px;line-height:1.5}
   input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ember);
@@ -174,18 +171,6 @@
   @media(min-width:560px){.fgrid.c2{grid-template-columns:1fr 1fr}.fgrid.c3{grid-template-columns:1fr 1fr 1fr}}
   .field{min-width:0}
 
-  /* rating picker */
-  .ratepick{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .stars{display:flex;gap:3px}
-  .stars button{appearance:none;border:0;background:transparent;cursor:pointer;padding:3px;
-    font-size:0;line-height:0}
-  .stars .dot{width:22px;height:22px;border-radius:50%;background:#3c2d1f;display:block;
-    transition:.12s;border:1px solid #00000033}
-  .stars button.on .dot{background:radial-gradient(circle at 35% 30%,var(--ember2),var(--ember) 60%);
-    box-shadow:0 0 10px #e07a3755}
-  .stars button.half .dot{background:linear-gradient(90deg,var(--ember) 50%,#3c2d1f 50%)}
-  .rateval{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--ember2);
-    min-width:46px;font-weight:500}
   .ratehint{font-size:12px;color:var(--faint)}
 
   .btn{appearance:none;border:0;font:inherit;font-weight:600;font-size:15px;cursor:pointer;
@@ -199,9 +184,6 @@
   .btnrow{display:flex;gap:10px;margin-top:6px}
   .btnrow .btn.primary{flex:1}
 
-  .prefill{font-size:12px;color:var(--leaf);margin-top:7px;display:none;align-items:center;gap:6px}
-  .prefill.nomatch{color:var(--mute)}
-  .prefill.show{display:flex}
 
   /* detail modal */
   .scrim{position:fixed;inset:0;background:#0c0905cc;backdrop-filter:blur(3px);
@@ -231,7 +213,7 @@
   .foot button{background:transparent;border:1px solid var(--line);color:var(--mute);
     font:inherit;font-size:12.5px;padding:8px 13px;border-radius:8px;cursor:pointer}
   .foot button:hover{border-color:var(--line2);color:var(--ink2)}
-  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+  .toast{position:fixed;bottom:calc(76px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(20px);
     background:#2e2318;border:1px solid var(--line2);color:var(--ink);padding:11px 18px;
     border-radius:30px;font-size:14px;box-shadow:var(--shadow);opacity:0;transition:.25s;
     z-index:80;pointer-events:none}
@@ -239,6 +221,50 @@
   .sectionhead{display:flex;align-items:baseline;gap:10px;margin:26px 2px 12px}
   .sectionhead h2{font-size:21px}
   .sectionhead .c{font-size:12px;color:var(--faint);font-family:'JetBrains Mono',monospace;margin-left:auto}
+  /* ---- Quick log ---- */
+  /* author display rules (.ratechips is a grid) would otherwise beat the hidden attribute */
+  [hidden]{display:none!important}
+  .unrated{display:grid;gap:6px;margin-bottom:10px}
+  .unrated:empty{display:none}
+  .unrated button{appearance:none;display:flex;justify-content:space-between;align-items:center;gap:10px;
+    width:100%;background:#3a2a17;border:1px solid #5c3b1f;color:var(--ember2);font:inherit;font-size:14px;
+    padding:10px 12px;border-radius:var(--rad-s);cursor:pointer;text-align:left;min-height:44px}
+  .unrated button b{font-weight:600;color:var(--ink);flex:none}
+  .edithd{font-family:'Fraunces',serif;font-size:19px}
+  .namebox{position:relative}
+  #f-label{font-size:17px;padding:13px 14px}
+  .sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;background:var(--card2);
+    border:1px solid var(--line2);border-radius:var(--rad-s);overflow:hidden;box-shadow:var(--shadow)}
+  .sg{appearance:none;display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;
+    background:transparent;border:0;border-top:1px solid var(--line);color:var(--ink);font:inherit;
+    font-size:15px;padding:10px 12px;text-align:left;cursor:pointer;min-height:44px}
+  .sg:first-child{border-top:0}
+  .sg span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .sgm{color:var(--mute);font-size:12px;font-family:'JetBrains Mono',monospace;flex:none}
+  .summary{font-size:12.5px;color:var(--mute);margin:8px 2px 0;line-height:1.5}
+  .linkbtn{appearance:none;background:none;border:0;padding:0;font:inherit;font-size:12.5px;
+    color:var(--ember2);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .again:empty{display:none}
+  .again .chips{margin-top:0}
+  .againchip{font:inherit;font-size:13px;cursor:pointer;min-height:36px;padding:6px 12px}
+  .rowlbl{display:flex;justify-content:space-between;align-items:baseline}
+  .ratechips{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .ratechips.low{margin-top:4px}
+  .rchip{appearance:none;min-height:42px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);
+    color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:13px;padding:0;cursor:pointer}
+  .rchip.on{background:linear-gradient(180deg,var(--ember2),var(--ember));color:#241206;
+    border-color:transparent;font-weight:700}
+  .footrow{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;color:var(--ink2)}
+  .toggle{display:flex;align-items:center;gap:8px;cursor:pointer;min-height:40px}
+  .toggle input{width:20px;height:20px;accent-color:var(--ember);margin:0}
+  .datebtn{position:relative;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink2);
+    border:1px solid var(--line2);border-radius:20px;padding:8px 12px;cursor:pointer}
+  .datebtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;padding:0;border:0}
+  #details summary{cursor:pointer;color:var(--mute);font-size:13px;padding:4px 2px;list-style:none}
+  #details summary::-webkit-details-marker{display:none}
+  #details summary::before{content:"▸ "}
+  #details[open] summary::before{content:"▾ "}
+  #details > .fgrid{margin-top:10px}
 </style>
 </head>
 <body>
@@ -251,21 +277,20 @@
       <button id="syncbtn" class="syncpill">○ Local</button>
     </div>
   </div>
-  <div class="tag">A journal for the leaf — and what it tells you about your palate.</div>
 </header>
 
-<nav>
+<nav class="tabbar">
   <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="palate">Palate</button>
+    <button role="tab" aria-selected="true" data-tab="log">Log</button>
     <button role="tab" aria-selected="false" data-tab="journal">Journal</button>
-    <button role="tab" aria-selected="false" data-tab="log">Log a smoke</button>
+    <button role="tab" aria-selected="false" data-tab="palate">Palate</button>
   </div>
 </nav>
 
 <div class="wrap">
 
   <!-- ===== PALATE ===== -->
-  <section class="panel on" id="palate" role="tabpanel">
+  <section class="panel" id="palate" role="tabpanel">
     <div class="card verdict" id="verdict"></div>
 
     <div class="stat-strip" id="statstrip"></div>
@@ -313,90 +338,72 @@
   </section>
 
   <!-- ===== LOG ===== -->
-  <section class="panel" id="log" role="tabpanel">
+  <section class="panel on" id="log" role="tabpanel">
+    <div class="unrated" id="unrated"></div>
     <div class="card pad">
-      <div class="eyebrow">New entry</div>
       <div class="fgrid">
+        <div class="edithd" id="edithd" hidden></div>
         <div class="field">
-          <label class="fl" for="f-label">Blend / line</label>
-          <input id="f-label" list="dl-label" placeholder="e.g. Serie V Melanio" autocomplete="off">
-          <div class="prefill" id="prefill">✓ Filled details from a known blend — tweak anything</div>
-        </div>
-        <div class="fgrid c2">
-          <div class="field">
-            <label class="fl" for="f-brand">Brand</label>
-            <input id="f-brand" list="dl-brand" placeholder="e.g. Oliva" autocomplete="off">
+          <div class="namebox">
+            <input id="f-label" placeholder="What are you smoking?" autocomplete="off"
+              autocapitalize="words" enterkeyhint="done" aria-label="Cigar name">
+            <div class="sugg" id="sugg" role="listbox" hidden></div>
           </div>
-          <div class="field">
-            <label class="fl" for="f-date">Date</label>
-            <input id="f-date" type="date">
-          </div>
+          <div class="summary" id="summary" hidden><span id="summarytext"></span>
+            <button type="button" class="linkbtn" id="showdetails">Edit details</button></div>
         </div>
+
+        <div class="again" id="again"></div>
 
         <div class="field">
-          <label class="fl">Your rating</label>
-          <div class="ratepick">
-            <div class="stars" id="stars"></div>
-            <span class="rateval" id="rateval">—</span>
-            <span class="ratehint">tap once = half · twice = full</span>
-          </div>
+          <div class="fl rowlbl"><span>Rating</span>
+            <button type="button" class="linkbtn" id="ratelow">Lower scores</button></div>
+          <div class="ratechips" id="ratechips"></div>
+          <div class="ratechips low" id="ratechips-low" hidden></div>
         </div>
 
-        <div class="fgrid c2">
-          <div class="field">
-            <label class="fl" for="f-origin">Origin</label>
-            <input id="f-origin" list="dl-origin" placeholder="e.g. Nicaragua" autocomplete="off">
-          </div>
-          <div class="field">
-            <label class="fl" for="f-body">Body</label>
-            <select id="f-body">
-              <option value="">—</option>
-              <option>Light</option><option>Med-Light</option><option>Med</option>
-              <option>Med-Full</option><option>Full</option>
-            </select>
-          </div>
+        <textarea id="f-notes" rows="2" placeholder="Flavors, draw, burn…" aria-label="Notes"></textarea>
+
+        <div class="footrow">
+          <label class="toggle"><input type="checkbox" id="f-social"> With friends</label>
+          <label class="datebtn"><span id="datelabel"></span>
+            <input id="f-date" type="date" aria-label="Date"></label>
         </div>
 
-        <div class="fgrid c2">
-          <div class="field">
-            <label class="fl" for="f-wrapper">Wrapper</label>
-            <input id="f-wrapper" list="dl-wrapper" placeholder="e.g. San Andres" autocomplete="off">
+        <details id="details">
+          <summary>Details</summary>
+          <div class="fgrid">
+            <div class="fgrid c2">
+              <div class="field"><label class="fl" for="f-brand">Brand</label>
+                <input id="f-brand" list="dl-brand" placeholder="Oliva" autocomplete="off"></div>
+              <div class="field"><label class="fl" for="f-origin">Origin</label>
+                <input id="f-origin" list="dl-origin" placeholder="Nicaragua" autocomplete="off"></div>
+            </div>
+            <div class="fgrid c2">
+              <div class="field"><label class="fl" for="f-wrapper">Wrapper</label>
+                <input id="f-wrapper" list="dl-wrapper" placeholder="San Andres" autocomplete="off"></div>
+              <div class="field"><label class="fl" for="f-wnote">Wrapper note</label>
+                <input id="f-wnote" list="dl-wnote" placeholder="Maduro" autocomplete="off"></div>
+            </div>
+            <div class="fgrid c2">
+              <div class="field"><label class="fl" for="f-binder">Binder</label>
+                <input id="f-binder" list="dl-binder" placeholder="Nicaraguan" autocomplete="off"></div>
+              <div class="field"><label class="fl" for="f-shape">Shape</label>
+                <input id="f-shape" list="dl-shape" placeholder="Toro" autocomplete="off"></div>
+            </div>
+            <div class="fgrid c2">
+              <div class="field"><label class="fl" for="f-body">Body</label>
+                <select id="f-body"><option value="">—</option><option>Light</option><option>Med-Light</option>
+                  <option>Med</option><option>Med-Full</option><option>Full</option></select></div>
+              <div class="field"><label class="fl" for="f-filler">Filler</label>
+                <input id="f-filler" placeholder="Nicaraguan, Dominican" autocomplete="off"></div>
+            </div>
           </div>
-          <div class="field">
-            <label class="fl" for="f-wnote">Wrapper note</label>
-            <input id="f-wnote" list="dl-wnote" placeholder="Maduro, Oscuro, Sun Grown…" autocomplete="off">
-          </div>
-        </div>
-
-        <div class="fgrid c2">
-          <div class="field">
-            <label class="fl" for="f-binder">Binder</label>
-            <input id="f-binder" list="dl-binder" placeholder="e.g. Nicaraguan" autocomplete="off">
-          </div>
-          <div class="field">
-            <label class="fl" for="f-shape">Shape</label>
-            <input id="f-shape" list="dl-shape" placeholder="e.g. Toro" autocomplete="off">
-          </div>
-        </div>
-
-        <div class="field">
-          <label class="fl" for="f-filler">Filler <span style="color:var(--faint)">— comma separated</span></label>
-          <input id="f-filler" placeholder="e.g. Nicaraguan, Dominican" autocomplete="off">
-        </div>
-
-        <div class="field">
-          <label class="fl" for="f-notes">Tasting notes</label>
-          <textarea id="f-notes" placeholder="Flavors, draw, burn, where you were, what you'd change…"></textarea>
-        </div>
-
-        <label class="fl" style="display:flex;align-items:center;gap:9px;cursor:pointer;margin:0">
-          <input type="checkbox" id="f-social" style="width:auto;accent-color:var(--ember)">
-          Smoked socially (you rate these higher — worth tracking)
-        </label>
+        </details>
 
         <div class="btnrow">
-          <button class="btn primary" id="save">Add to journal</button>
-          <button class="btn ghost" id="clear">Clear</button>
+          <button class="btn primary" id="save">Save</button>
+          <button class="btn ghost" id="cancel" hidden>Cancel</button>
         </div>
       </div>
     </div>
@@ -404,7 +411,6 @@
 </div>
 
 <!-- datalists -->
-<datalist id="dl-label"></datalist>
 <datalist id="dl-brand"></datalist>
 <datalist id="dl-origin"></datalist>
 <datalist id="dl-wrapper"></datalist>
@@ -701,25 +707,9 @@ function closeDetail(){$("#scrim").classList.remove("on");document.body.style.ov
 $("#scrim").addEventListener("click",e=>{if(e.target.id==="scrim")closeDetail();});
 
 /* ============ LOG FORM ============ */
-let rating=null;
-function buildStars(){
-  const s=$("#stars");s.innerHTML="";
-  for(let i=1;i<=5;i++){const b=document.createElement("button");
-    b.innerHTML='<span class="dot"></span>';b.dataset.i=i;
-    b.onclick=()=>{const half=i-0.5;rating=(rating===half)?i:(rating===i?null:half);paintStars();};
-    s.appendChild(b);}
-  paintStars();
-}
-function paintStars(){
-  $$("#stars button").forEach(b=>{const i=+b.dataset.i;b.classList.remove("on","half");
-    if(rating>=i)b.classList.add("on");else if(rating>=i-0.5)b.classList.add("half");});
-  $("#rateval").textContent=rating?rating.toFixed(rating%1?2:0).replace(/\.00$/,""):"—";
-}
 function fillDatalists(){
   const all=live();
   const set=(sel,vals)=>{$(sel).innerHTML=uniq(vals).sort().map(v=>`<option value="${esc(v)}">`).join("");};
-  const refLabels=REF.map(r=>r.l);
-  set("#dl-label",[...all.map(e=>e.l),...refLabels]);
   set("#dl-brand",[...all.map(e=>e.b),...REF.map(r=>r.b)]);
   set("#dl-origin",[...all.map(e=>e.o),...REF.map(r=>r.o)]);
   set("#dl-wrapper",[...all.map(e=>e.w),...REF.map(r=>r.w)]);
@@ -742,25 +732,6 @@ function findMatch(label,brand,pool){
   if(br){const c2=pool.filter(e=>{const l=(e.l||"").toLowerCase();return l.includes(v)&&l.includes(br);});if(c2.length)return shortest(c2);}
   return null;
 }
-function tryPrefill(){
-  const note=$("#prefill");
-  const m=findMatch($("#f-label").value,$("#f-brand").value);
-  if(!m){
-    if($("#f-label").value.trim().length>=3){
-      note.textContent="No catalog match — fill the leaf fields yourself";
-      note.classList.add("nomatch","show");setTimeout(()=>note.classList.remove("show"),2800);}
-    return;}
-  const setIf=(sel,val)=>{val=cleanLeaf(val);if(val&&!$(sel).value)$(sel).value=val;};
-  setIf("#f-brand",m.b);setIf("#f-origin",m.o);setIf("#f-wrapper",m.w);
-  setIf("#f-binder",m.bn);setIf("#f-body",m.bd);setIf("#f-shape",m.sh);setIf("#f-wnote",m.wn);
-  if(m.fi&&m.fi.length&&!$("#f-filler").value)$("#f-filler").value=m.fi.map(cleanLeaf).filter(Boolean).join(", ");
-  note.classList.remove("nomatch");
-  note.textContent="✓ Matched \u201C"+m.l+"\u201D — wrapper, binder & filler filled from catalog";
-  note.classList.add("show");setTimeout(()=>note.classList.remove("show"),3400);
-}
-$("#f-label").addEventListener("change",tryPrefill);
-$("#f-label").addEventListener("blur",tryPrefill);
-$("#f-brand").addEventListener("change",tryPrefill);
 
 /* backfill blank fields on existing entries from the catalog + your own history */
 $("#backfill").onclick=()=>{
@@ -780,26 +751,137 @@ $("#backfill").onclick=()=>{
 };
 
 
+/* rating chips: quarter points, tap again to clear */
+const RATE_MAIN=[3.5,3.75,4,4.25,4.5,4.75,5], RATE_LOW=[2,2.25,2.5,2.75,3,3.25];
+let rating=null;
+function buildRating(){
+  const mk=v=>`<button type="button" class="rchip" data-r="${v}">${v}</button>`;
+  $("#ratechips").innerHTML=RATE_MAIN.map(mk).join("");
+  $("#ratechips-low").innerHTML=RATE_LOW.map(mk).join("");
+  $$(".rchip").forEach(b=>b.onclick=()=>{const v=+b.dataset.r;setRating(rating===v?null:v);});
+  $("#ratelow").onclick=()=>{$("#ratechips-low").hidden=!$("#ratechips-low").hidden;};
+}
+function setRating(v){rating=v;
+  $$(".rchip").forEach(b=>b.classList.toggle("on",+b.dataset.r===rating));
+  if(rating!=null&&rating<3.5)$("#ratechips-low").hidden=false;}
+
+/* history + catalog suggestions */
+function historyCigars(){
+  const m=new Map();
+  [...live()].sort((a,b)=>(b.d||"").localeCompare(a.d||"")).forEach(e=>{
+    if(!e.l&&!e.b)return;
+    const key=((e.b||"")+"|"+(e.l||"")).toLowerCase();
+    if(m.has(key))m.get(key).count++;else m.set(key,{e,count:1});
+  });
+  return [...m.values()];
+}
+function suggest(q){
+  q=q.trim().toLowerCase();if(!q)return[];
+  const hist=historyCigars()
+    .filter(h=>((h.e.b||"")+" "+(h.e.l||"")).toLowerCase().includes(q))
+    .map(h=>({kind:"history",e:h.e}));
+  const known=hist.map(h=>(h.e.l||"").toLowerCase()).filter(Boolean);
+  const cat=REF.filter(r=>{const l=r.l.toLowerCase();return l.includes(q)&&!known.some(k=>l.endsWith(k));})
+    .sort((a,b)=>b.l.toLowerCase().startsWith(q)-a.l.toLowerCase().startsWith(q))
+    .map(r=>({kind:"catalog",e:r}));
+  return [...hist,...cat].slice(0,8);
+}
+/* catalog names carry the brand ("Oliva Serie G Maduro"); split it off when a known brand prefixes it */
+function splitBrand(name){
+  const low=name.toLowerCase();
+  const hit=uniq(live().map(e=>e.b)).sort((a,b)=>b.length-a.length)
+    .find(br=>low.startsWith(br.toLowerCase()+" "));
+  return hit?{b:hit,l:name.slice(hit.length+1).trim()}:{b:"",l:name};
+}
+const LEAF_IDS={o:"#f-origin",w:"#f-wrapper",wn:"#f-wnote",bn:"#f-binder",bd:"#f-body",sh:"#f-shape"};
+function setLeaf(src){
+  Object.entries(LEAF_IDS).forEach(([k,sel])=>$(sel).value=cleanLeaf(src[k]));
+  $("#f-filler").value=(src.fi||[]).map(cleanLeaf).filter(Boolean).join(", ");
+}
+function clearLeaf(){setLeaf({});$("#f-brand").value="";}
+let pickedLabel=null, sugList=[];
+function applyPick(src,kind){
+  let b=src.b||"", l=src.l||"";
+  if(kind==="catalog"){const sp=splitBrand(l);b=sp.b;l=sp.l;}
+  $("#f-label").value=l;$("#f-brand").value=b;setLeaf(src);
+  pickedLabel=l;hideSugg();renderSummary();renderAgain();
+}
+function renderSugg(){
+  const box=$("#sugg");sugList=suggest($("#f-label").value);
+  if(!sugList.length){hideSugg();return;}
+  box.innerHTML=sugList.map((s,i)=>`<button type="button" class="sg" role="option" data-i="${i}">
+    <span>${esc(s.e.l||s.e.b)}</span><span class="sgm">${s.kind==="history"?esc(s.e.b||"yours"):"catalog"}</span></button>`).join("");
+  box.hidden=false;
+}
+function hideSugg(){$("#sugg").hidden=true;$("#sugg").innerHTML="";sugList=[];}
+/* mousedown fires before the input blurs; preventing it keeps focus so the tap lands */
+$("#sugg").addEventListener("mousedown",e=>e.preventDefault());
+$("#sugg").addEventListener("click",e=>{const b=e.target.closest(".sg");if(!b)return;
+  const s=sugList[+b.dataset.i];if(s){applyPick(s.e,s.kind);$("#f-label").blur();}});
+$("#f-label").addEventListener("input",()=>{
+  if(pickedLabel!==null&&$("#f-label").value!==pickedLabel){clearLeaf();pickedLabel=null;}
+  renderSugg();renderAgain();renderSummary();
+});
+$("#f-label").addEventListener("keydown",e=>{if(e.key!=="Enter")return;e.preventDefault();
+  const s=sugList[0];if(s)applyPick(s.e,s.kind);$("#f-label").blur();});
+$("#f-label").addEventListener("blur",()=>{setTimeout(hideSugg,150);tryPrefill();});
+/* typed without picking: fill blank leaf fields from history/catalog, as before */
+function tryPrefill(){
+  const m=findMatch($("#f-label").value,$("#f-brand").value);if(!m)return;
+  const setIf=(sel,val)=>{val=cleanLeaf(val);if(val&&!$(sel).value)$(sel).value=val;};
+  setIf("#f-brand",m.b);Object.entries(LEAF_IDS).forEach(([k,sel])=>setIf(sel,m[k]));
+  if(m.fi&&m.fi.length&&!$("#f-filler").value)$("#f-filler").value=m.fi.map(cleanLeaf).filter(Boolean).join(", ");
+  renderSummary();
+}
+function renderSummary(){
+  const parts=[$("#f-brand").value,[$("#f-wrapper").value,$("#f-wnote").value].filter(Boolean).join(" "),
+    $("#f-binder").value,$("#f-body").value].map(s=>s.trim()).filter(Boolean);
+  $("#summarytext").textContent=parts.join(" · ");$("#summary").hidden=!parts.length;
+}
+$("#details").addEventListener("input",renderSummary);
+$("#details").addEventListener("change",renderSummary);
+$("#showdetails").onclick=()=>{$("#details").open=true;
+  $("#details").scrollIntoView({behavior:"smooth",block:"start"});};
+
+/* smoke-again chips: cigars logged more than once */
+function renderAgain(){
+  const box=$("#again");
+  if($("#f-label").value.trim()||(typeof editingId!=="undefined"&&editingId)){box.innerHTML="";return;}
+  const reps=historyCigars().filter(h=>h.count>1).slice(0,6);
+  box.innerHTML=reps.length?`<div class="fl">Smoke again</div><div class="chips">${
+    reps.map((h,i)=>`<button type="button" class="chip againchip" data-i="${i}">${esc(h.e.l||h.e.b)}</button>`).join("")}</div>`:"";
+  box.querySelectorAll(".againchip").forEach(b=>b.onclick=()=>applyPick(reps[+b.dataset.i].e,"history"));
+}
+
+/* dates */
+function fmtShort(d){if(!d)return"";const[y,m,da]=d.split("-");
+  return new Date(y,m-1,da).toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function dateLabel(d){d=d||localToday();const t=localToday();
+  return (d===t?"Today, ":"")+fmtShort(d)+(d.slice(0,4)!==t.slice(0,4)?", "+d.slice(0,4):"");}
+$("#f-date").addEventListener("change",()=>{$("#datelabel").textContent=dateLabel($("#f-date").value);});
+let formDay=localToday();
+
 function clearForm(){
   ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
     .forEach(id=>$("#"+id).value="");
-  $("#f-body").value="";$("#f-social").checked=false;rating=null;paintStars();
-  $("#f-date").value=localToday();
+  $("#f-body").value="";$("#f-social").checked=false;setRating(null);$("#ratechips-low").hidden=true;
+  formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);
+  $("#details").open=false;pickedLabel=null;hideSugg();renderSummary();renderAgain();
 }
-$("#clear").onclick=()=>{clearForm();toast("Cleared");};
-$("#save").onclick=()=>{
-  const l=$("#f-label").value.trim(), b=$("#f-brand").value.trim();
-  if(!l&&!b){toast("Add at least a blend or brand");return;}
-  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,d:$("#f-date").value||localToday(),
-    b,l,sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
-    w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),
-    bn:$("#f-binder").value.trim(),
+function formFields(){
+  return {d:$("#f-date").value||localToday(),
+    b:$("#f-brand").value.trim(),l:$("#f-label").value.trim(),
+    sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
+    w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),bn:$("#f-binder").value.trim(),
     fi:$("#f-filler").value.split(",").map(x=>x.trim()).filter(Boolean),
-    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,
-    n:$("#f-notes").value.trim()};
+    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,n:$("#f-notes").value.trim()};
+}
+$("#save").onclick=()=>{
+  const f=formFields();
+  if(!f.l&&!f.b){toast("Add a name first");$("#f-label").focus();return;}
+  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,...f};
   data=[e,...data];save();fillDatalists();renderAll();clearForm();
-  toast("Added to journal ·  "+(e.l||e.b));pushSync();
-  switchTab("journal");
+  toast("Saved · "+(e.l||e.b));pushSync();window.scrollTo({top:0});
 };
 
 /* ============ EXPORT / IMPORT ============ */
@@ -837,7 +919,7 @@ $("#q").addEventListener("input",renderJournal);
 $("#sort").addEventListener("change",renderJournal);
 document.addEventListener("click",e=>{const en=e.target.closest(".entry");if(en)openDetail(en.dataset.id);});
 
-function renderAll(){renderPalate();renderJournal();}
+function renderAll(){renderPalate();renderJournal();renderAgain();}
 
 /* ============ SYNC (fixed backend — Cloudflare Worker + D1) ============ */
 /* Known limitations:
@@ -928,10 +1010,16 @@ $("#syncbtn").onclick=()=>{
   syncNow();
 };
 window.addEventListener("online",()=>syncNow(true));
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncNow(true);});
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)return;
+  /* a standalone app can stay open overnight; move an untouched date to today */
+  if($("#f-date").value===formDay&&formDay!==localToday()){
+    formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);}
+  syncNow(true);
+});
 
 /* ============ BOOT ============ */
-buildStars();fillDatalists();clearForm();renderAll();
+buildRating();fillDatalists();clearForm();renderAll();
 updateSyncUI();syncNow(true);
 
 if("serviceWorker" in navigator)
