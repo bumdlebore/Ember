@@ -498,6 +498,10 @@ function fmtDate(d){if(!d)return"";const[y,m,da]=d.split("-");
 function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");
   clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("on"),1900);}
 function uniq(arr){return[...new Set(arr.filter(Boolean))];}
+function localToday(d=new Date()){const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate());}
+const ESC={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>ESC[c]);}
 
 /* flavor lexicon -> regex */
 const FLAVORS=[
@@ -516,7 +520,14 @@ function agg(keyFn){
     (m[k]=m[k]||[]).push(e.r);});});
   return Object.entries(m).map(([k,v])=>({k,n:v.length,avg:v.reduce((a,b)=>a+b,0)/v.length}));
 }
-function topBy(rows,minN){return rows.filter(r=>r.n>=minN).sort((a,b)=>b.avg-a.avg||b.n-a.n);}
+/* Rank by a shrunk average so 2 smokes can't outrank 20:
+   (n·avg + k·mean)/(n + k). The raw avg is still what the UI shows. */
+const SHRINK_K=5, HEADLINE_MIN_N=5;
+function topBy(rows,minN,mean){
+  return rows.filter(r=>r.n>=minN)
+    .map(r=>({...r,shr:(r.n*r.avg+SHRINK_K*mean)/(r.n+SHRINK_K)}))
+    .sort((a,b)=>b.shr-a.shr||b.n-a.n);
+}
 
 function renderPalate(){
   const R=rated();
@@ -524,12 +535,12 @@ function renderPalate(){
   if(!R.length){$("#verdict").innerHTML='<div class="pad empty">Log a few smokes and your palate reads out here.</div>';return;}
 
   const avg=R.reduce((a,e)=>a+e.r,0)/R.length;
-  const origin=topBy(agg(e=>[e.o]),2);
-  const wrapper=topBy(agg(e=>[e.w]),2);
-  const binder=topBy(agg(e=>[e.bn]),2);
-  const filler=topBy(agg(e=>[...(e.fi||[])]),2);
-  const body=topBy(agg(e=>[e.bd]),2);
-  const shape=topBy(agg(e=>[e.sh]),2);
+  const origin=topBy(agg(e=>[e.o]),2,avg);
+  const wrapper=topBy(agg(e=>[e.w]),2,avg);
+  const binder=topBy(agg(e=>[e.bn]),2,avg);
+  const filler=topBy(agg(e=>[...(e.fi||[])]),2,avg);
+  const body=topBy(agg(e=>[e.bd]),2,avg);
+  const shape=topBy(agg(e=>[e.sh]),2,avg);
   const maduro=R.filter(e=>/maduro/i.test(e.wn)||/maduro/i.test(e.l));
   const madAvg=maduro.length?maduro.reduce((a,e)=>a+e.r,0)/maduro.length:0;
   const social=R.filter(e=>e.s), solo=R.filter(e=>!e.s);
@@ -537,16 +548,20 @@ function renderPalate(){
   const soloAvg=solo.length?solo.reduce((a,e)=>a+e.r,0)/solo.length:0;
 
   /* verdict sentence */
-  const o=origin[0], w=wrapper[0], bd=body[0];
-  let line=`You're a <em>${o?o.k:"Nicaraguan"}</em> smoker`;
-  if(w) line+=`, happiest under a <em>${w.k}</em> wrapper`;
-  if(madAvg>=avg+0.1 && maduro.length>=3) line+=` — and a <em>maduro</em> at heart`;
+  const headTop=rows=>rows[0]&&rows[0].n>=HEADLINE_MIN_N?rows[0]:null;
+  const o=headTop(origin), w=headTop(wrapper), bd=body[0];
+  let line;
+  if(o){line=`You're a <em>${esc(o.k)}</em> smoker`;
+    if(w) line+=`, happiest under a <em>${esc(w.k)}</em> wrapper`;}
+  else if(w) line=`You're happiest under a <em>${esc(w.k)}</em> wrapper`;
+  else line=`Log a few more and a pattern shows up here`;
+  if(o&&madAvg>=avg+0.1 && maduro.length>=3) line+=` — and a <em>maduro</em> at heart`;
   line+=`.`;
   $("#verdict").innerHTML=`
     <h2>Your palate, read from ${R.length} rated smokes</h2>
     <div class="line">${line}</div>
     <div class="meta">
-      ${bd?`<span>Sweet spot body · <b>${bd.k}</b></span>`:""}
+      ${bd?`<span>Sweet spot body · <b>${esc(bd.k)}</b></span>`:""}
       ${maduro.length>=3?`<span>Maduro avg · <b>${madAvg.toFixed(2)}</b></span>`:""}
       ${social.length?`<span>Social vs solo · <b>${socAvg.toFixed(2)} / ${soloAvg.toFixed(2)}</b></span>`:""}
     </div>`;
@@ -595,7 +610,7 @@ function rankCard(sel,title,hint,rows,keepOrder){
   if(keepOrder) r=[...r].sort((a,b)=>bodyOrder.indexOf(a.k)-bodyOrder.indexOf(b.k));
   $(sel).innerHTML=`<h3>${title}</h3><div class="hint">${hint}</div>
     ${r.map(x=>`<div class="rankrow">
-      <div class="name"><span>${x.k}</span><span class="n" title="${x.n} logged">×${x.n}</span></div>
+      <div class="name"><span>${esc(x.k)}</span><span class="n" title="${x.n} logged">×${x.n}</span></div>
       <div class="bar"><i style="width:${Math.round(x.avg/max*100)}%"></i></div>
       <div class="score">${x.avg.toFixed(2)}</div>
     </div>`).join("")}`;
@@ -612,20 +627,20 @@ function embers(r){
 }
 function entryRow(e,last){
   const fi=(e.fi||[]).join(" · ");
-  return `<div class="entry" data-id="${e.id}">
+  return `<div class="entry" data-id="${esc(e.id)}">
     <div class="top">
-      <span class="nm">${e.l||e.b||"Untitled"}</span>
+      <span class="nm">${esc(e.l||e.b||"Untitled")}</span>
       <span class="dt">${fmtDate(e.d)}</span>
     </div>
-    <div class="br">${e.b||""}</div>
+    <div class="br">${esc(e.b||"")}</div>
     <div class="mid">
-      ${e.o?`<span class="tagm o">${e.o}</span>`:""}
-      ${e.w?`<span class="tagm">${e.w}</span>`:""}
-      ${e.bd?`<span class="tagm">${e.bd}</span>`:""}
-      ${e.sh?`<span class="tagm">${e.sh}</span>`:""}
+      ${e.o?`<span class="tagm o">${esc(e.o)}</span>`:""}
+      ${e.w?`<span class="tagm">${esc(e.w)}</span>`:""}
+      ${e.bd?`<span class="tagm">${esc(e.bd)}</span>`:""}
+      ${e.sh?`<span class="tagm">${esc(e.sh)}</span>`:""}
       ${e.s?`<span class="soc">social</span>`:""}
     </div>
-    ${e.n?`<div class="nt">${e.n}</div>`:""}
+    ${e.n?`<div class="nt">${esc(e.n)}</div>`:""}
     <div class="mid" style="justify-content:space-between;align-items:center;margin-top:11px">
       <div class="rate">${typeof e.r==="number"?`<span class="num">${e.r}</span><div class="embers">${embers(e.r)}</div>`:`<span class="ratehint">unrated</span>`}</div>
     </div>
@@ -658,21 +673,21 @@ function openDetail(id){
     <button class="x" id="closex">✕</button>
     <div class="hd">
       <div class="eyebrow">${fmtDate(e.d)}${e.s?" · social smoke":""}</div>
-      <h2 style="font-size:25px;margin-top:4px">${e.l||e.b||"Untitled"}</h2>
-      <div class="br" style="margin-top:4px">${e.b||""}</div>
+      <h2 style="font-size:25px;margin-top:4px">${esc(e.l||e.b||"Untitled")}</h2>
+      <div class="br" style="margin-top:4px">${esc(e.b||"")}</div>
       <div class="rate" style="margin:14px 0 6px">
         ${typeof e.r==="number"?`<span class="num" style="font-size:20px">${e.r}</span><div class="embers">${embers(e.r)}</div>`:`<span class="ratehint">unrated</span>`}
       </div>
     </div>
     <dl class="dl">
-      ${e.o?`<dt>origin</dt><dd>${e.o}</dd>`:""}
-      ${e.bd?`<dt>body</dt><dd>${e.bd}</dd>`:""}
-      ${e.sh?`<dt>shape</dt><dd>${e.sh}</dd>`:""}
-      ${e.w?`<dt>wrapper</dt><dd>${e.w}${e.wn?` · ${e.wn}`:""}</dd>`:""}
-      ${e.bn?`<dt>binder</dt><dd>${e.bn}</dd>`:""}
-      ${fi?`<dt>filler</dt><dd>${fi}</dd>`:""}
+      ${e.o?`<dt>origin</dt><dd>${esc(e.o)}</dd>`:""}
+      ${e.bd?`<dt>body</dt><dd>${esc(e.bd)}</dd>`:""}
+      ${e.sh?`<dt>shape</dt><dd>${esc(e.sh)}</dd>`:""}
+      ${e.w?`<dt>wrapper</dt><dd>${esc(e.w)}${e.wn?` · ${esc(e.wn)}`:""}</dd>`:""}
+      ${e.bn?`<dt>binder</dt><dd>${esc(e.bn)}</dd>`:""}
+      ${fi?`<dt>filler</dt><dd>${esc(fi)}</dd>`:""}
     </dl>
-    ${e.n?`<div class="dnotes">“${e.n}”</div>`:""}
+    ${e.n?`<div class="dnotes">“${esc(e.n)}”</div>`:""}
     <div class="delrow"><button class="del" id="delbtn">Delete entry</button></div>`;
   $("#scrim").classList.add("on");document.body.style.overflow="hidden";
   $("#closex").onclick=closeDetail;
@@ -702,7 +717,7 @@ function paintStars(){
 }
 function fillDatalists(){
   const all=live();
-  const set=(sel,vals)=>{$(sel).innerHTML=uniq(vals).sort().map(v=>`<option value="${v.replace(/"/g,'&quot;')}">`).join("");};
+  const set=(sel,vals)=>{$(sel).innerHTML=uniq(vals).sort().map(v=>`<option value="${esc(v)}">`).join("");};
   const refLabels=REF.map(r=>r.l);
   set("#dl-label",[...all.map(e=>e.l),...refLabels]);
   set("#dl-brand",[...all.map(e=>e.b),...REF.map(r=>r.b)]);
@@ -769,13 +784,13 @@ function clearForm(){
   ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
     .forEach(id=>$("#"+id).value="");
   $("#f-body").value="";$("#f-social").checked=false;rating=null;paintStars();
-  $("#f-date").value=new Date().toISOString().slice(0,10);
+  $("#f-date").value=localToday();
 }
 $("#clear").onclick=()=>{clearForm();toast("Cleared");};
 $("#save").onclick=()=>{
   const l=$("#f-label").value.trim(), b=$("#f-brand").value.trim();
   if(!l&&!b){toast("Add at least a blend or brand");return;}
-  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,d:$("#f-date").value||new Date().toISOString().slice(0,10),
+  const e={id:"e"+Date.now(),u:Date.now(),deleted:0,d:$("#f-date").value||localToday(),
     b,l,sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
     w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),
     bn:$("#f-binder").value.trim(),
