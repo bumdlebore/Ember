@@ -39,5 +39,18 @@
   $("#f-date").value = "2020-01-01"; formDay = "2020-01-01";
   document.dispatchEvent(new Event("visibilitychange"));
   r.dayRolls = $("#f-date").value===localToday();
+  // review fixes: Enter keeps an exact typed name; a half-filled form keeps its date
+  data = [{id:"eb1",u:Date.now(),deleted:0,d:localToday(),b:"EP Carrillo",l:"Encore Black",r:4,fi:[]}, ...data];
+  clearForm(); inp.value = "Encore"; inp.dispatchEvent(new Event("input"));
+  r.exactFirst = document.querySelector("#sugg .sg span").textContent === "Encore";
+  inp.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true,cancelable:true}));
+  r.enterExact = inp.value==="Encore";
+  clearForm(); inp.value = "Padron 1964"; inp.dispatchEvent(new Event("input"));
+  inp.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true,cancelable:true}));
+  r.enterKeepsTyped = inp.value==="Padron 1964";
+  $("#f-date").value = "2020-01-01"; formDay = "2020-01-01";
+  document.dispatchEvent(new Event("visibilitychange"));
+  r.halfFilledKeepsDay = $("#f-date").value==="2020-01-01";
+  clearForm();
   return r;
 })()

@@ -790,7 +790,9 @@ function suggest(q){
   const cat=REF.filter(r=>{const l=r.l.toLowerCase();return l.includes(q)&&!known.some(k=>l.endsWith(k));})
     .sort((a,b)=>b.l.toLowerCase().startsWith(q)-a.l.toLowerCase().startsWith(q))
     .map(r=>({kind:"catalog",e:r}));
-  return [...hist,...cat].slice(0,8);
+  /* an exact blend match goes first, so "Encore" never yields to "Encore Black" */
+  const exact=s=>(s.e.l||"").toLowerCase()===q;
+  return [...hist,...cat].sort((a,b)=>exact(b)-exact(a)).slice(0,8);
 }
 /* catalog names carry the brand ("Oliva Serie G Maduro"); split it off when a known brand prefixes it */
 function splitBrand(name){
@@ -829,7 +831,9 @@ $("#f-label").addEventListener("input",()=>{
   renderSugg();renderAgain();renderSummary();
 });
 $("#f-label").addEventListener("keydown",e=>{if(e.key!=="Enter")return;e.preventDefault();
-  const s=sugList[0];if(s)applyPick(s.e,s.kind);$("#f-label").blur();});
+  /* only an exact match is safe to pick blind; otherwise keep what he typed */
+  const s=sugList[0],v=$("#f-label").value.trim().toLowerCase();
+  if(s&&(s.e.l||"").toLowerCase()===v)applyPick(s.e,s.kind);$("#f-label").blur();});
 $("#f-label").addEventListener("blur",()=>{setTimeout(hideSugg,150);tryPrefill();});
 /* typed without picking: fill blank leaf fields from history/catalog, as before */
 function tryPrefill(){
@@ -881,7 +885,7 @@ function startEdit(id){
   $("#f-notes").value=e.n||"";$("#f-social").checked=!!e.s;
   setRating(typeof e.r==="number"?e.r:null);
   $("#f-date").value=e.d||localToday();$("#datelabel").textContent=dateLabel($("#f-date").value);
-  pickedLabel=e.l||"";setEditMode(id,e.l||e.b);
+  pickedLabel=null;setEditMode(id,e.l||e.b);
   $("#details").open=true;renderSummary();renderAgain();renderUnrated();
 }
 function smokeAgain(id){
@@ -1054,7 +1058,8 @@ window.addEventListener("online",()=>syncNow(true));
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden)return;
   /* a standalone app can stay open overnight; move an untouched date to today */
-  if($("#f-date").value===formDay&&formDay!==localToday()){
+  const untouched=!editingId&&!$("#f-label").value.trim()&&!$("#f-notes").value.trim()&&rating===null;
+  if(untouched&&$("#f-date").value===formDay&&formDay!==localToday()){
     formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);}
   syncNow(true);
 });

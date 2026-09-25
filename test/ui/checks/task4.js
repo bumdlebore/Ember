@@ -26,6 +26,14 @@
   openDetail("u-new"); document.querySelector("#editbtn").click();
   r.editFromSheet = editingId==="u-new" && $("#details").open && $("#f-date").value===e.d && rating===4.25;
   $("#cancel").click();
+  // review fixes: renaming in edit mode keeps leaf; edit mode never rolls the date
+  startEdit("u-new"); $("#f-brand").value="EP Carrillo"; $("#f-wrapper").value="Ecuador Habano";
+  $("#f-label").value="Encore Black Maduro"; $("#f-label").dispatchEvent(new Event("input"));
+  r.editRenameKeepsLeaf = $("#f-brand").value==="EP Carrillo" && $("#f-wrapper").value==="Ecuador Habano";
+  $("#f-date").value="2020-01-01"; formDay="2020-01-01";
+  document.dispatchEvent(new Event("visibilitychange"));
+  r.editNoDayRoll = $("#f-date").value==="2020-01-01";
+  $("#cancel").click();
   r.cancelResets = editingId===null && $("#f-label").value==="" && rating===null;
   return r;
 })()
