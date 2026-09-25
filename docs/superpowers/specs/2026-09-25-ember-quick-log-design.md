@@ -86,14 +86,14 @@ Top to bottom:
 6. **Notes.** A textarea that starts at 2 rows. Placeholder "Flavors, draw,
    burn…".
 7. **Footer row.** A "With friends" toggle on the left sets `s`. The date on
-   the right reads "Tonight, Sep 25" when it is today and "Sep 23" otherwise.
+   the right reads "Today, Sep 25" when it is today and "Sep 23" otherwise.
    Tapping it opens the native date input.
-8. **Save**, full width. Save works with no rating. Unrated saves then appear
-   in the unrated strip.
-9. **Details** (collapsed by default, opened by "Edit details"): brand, blend,
+8. **Details** (collapsed by default, opened by "Edit details"): brand,
    origin, body, wrapper, wrapper note, binder, shape, filler. These are
-   today's fields, with today's datalists except blend, which moves to the
-   name field.
+   today's fields and datalists. Blend moves to the name field. Details sit
+   above Save, so edits happen before the button.
+9. **Save**, full width. Save works with no rating. Unrated saves then appear
+   in the unrated strip.
 
 After a save, the app stays on Log, clears the form, and shows the toast
 "Saved · <name>". The next action is often the next smoke or nothing, so it
@@ -138,7 +138,9 @@ no longer switches to Journal.
   Access check as `/`. `wrangler.toml` gets a `Data` rule for `*.png`. The
   `<link rel="manifest">` uses `crossorigin="use-credentials"` so the fetch
   carries the Access cookie.
-- The service worker caches the manifest and icons with the shell.
+- The manifest and icon responses carry `X-Ember-Shell: 1`, since they come
+  from the Worker and not an Access interstitial. The service worker's
+  existing rule then caches them, and `sw.js` doesn't change.
 - `<meta name="apple-mobile-web-app-capable">` and a status-bar style meta
   are added.
 
