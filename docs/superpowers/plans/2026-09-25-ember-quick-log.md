@@ -4,6 +4,8 @@
 
 - [ ] Resume: build Ember quick log from this plan on claude01. Tick this in Task 5 Step 5.
 
+**Progress 2026-09-25 (claude01):** Tasks 1–4 are done and pushed, along with the Task 5 Step 1 review fixes (last commit `cbbee91`). `npm test` passes 56/56, and the UI checks for baseline and tasks 2–4 all pass. Next is Task 5 Step 2: Austin deploys from the Mac. Rulings and deferred minors are in the claude01 session's final message and in draft PR #1's body.
+
 **Goal:** Execute Tasks 1–5 below on branch `quick-log`, so logging in Ember beats the Cigar journal sheet.
 
 **Decisions made:** everything is in the spec (`docs/superpowers/specs/2026-09-25-ember-quick-log-design.md`). Ember has no vault or personal project folder. This repo is its only canonical record, so don't write Ember notes into Homelab files.
