@@ -34,8 +34,8 @@ export function splitFiller(s) {
 export function parsePage(html) {
   const crumbBlock = (html.match(/BreadcrumbList[\s\S]*?<\/div>/i) || [""])[0];
   const crumbs = [...crumbBlock.matchAll(/itemprop=["']name["'][^>]*>([^<]+)</gi)].map((m) => decode(m[1]).trim());
-  if (crumbs.length < 4) return null; // Home, Cigars, Brand, Blend
-  const brand = crumbs[2], blend = crumbs[3];
+  if (crumbs.length < 4) return null; // Home, Cigars, [category,] Brand, Blend
+  const brand = crumbs.at(-2), blend = crumbs.at(-1); // a category crumb ("Flavored") can precede the brand
 
   const all = lines(html);
   const start = all.indexOf("Specifications");

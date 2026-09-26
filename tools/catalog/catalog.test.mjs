@@ -21,6 +21,13 @@ describe("parsePage", () => {
   it("returns null for a sampler with no wrapper, binder, or filler", () => {
     expect(parsePage(fx("sampler.html"))).toBeNull();
   });
+  it("takes brand and blend from the last two crumbs when a category crumb sits before them", () => {
+    expect(parsePage(fx("category.html"))).toEqual({
+      brand: "Testbrand", blend: "Testbrand Blue",
+      size: { n: "(Nick) Short", shape: "Robusto", len: "5", rg: 50 },
+      w: "Connecticut Shade", bn: "", fi: ["Nicaragua"], o: "", mk: "", color: "", strength: "Mild",
+    });
+  });
   it("returns null without a breadcrumb", () => {
     expect(parsePage("<h1>Something</h1><div>Specifications</div>")).toBeNull();
   });
