@@ -1,26 +1,36 @@
 # Ember tasting form Implementation Plan
 
-## Handoff — 2026-09-25 (Claude Code desktop on MacBook → claude01, Opus 5.5)
+## Handoff — 2026-09-25 (claude01, after the build)
 
-- [ ] Resume: build the tasting form from this plan on claude01. Tick this in Task 5 Step 8.
+- [ ] Resume: deploy, phone check, and finish the branch. Tick this in Task 5 Step 8.
 
-**Goal:** Execute Tasks 1–5 below on branch `tasting-form`.
+**Goal:** Ship branch `tasting-form` (Task 5 Steps 6–8).
 
-**Decisions made:** see the spec (`docs/superpowers/specs/2026-09-25-ember-tasting-form-design.md`). Austin approved the spec, the plan, native execution on claude01, the Barlow Condensed download (Task 1 Step 3), and the Punch date fix. This repo is Ember's only canonical record, so don't write Ember notes into Homelab files.
+**Decisions made:** see the spec (`docs/superpowers/specs/2026-09-25-ember-tasting-form-design.md`). Austin approved the spec, the plan, native execution on claude01, the Barlow Condensed download, and the Punch date fix. This repo is Ember's only canonical record, so don't write Ember notes into Homelab files.
 
 **Current state**
-- verified 2026-09-25: `main` includes the quick-log work (PR #1 merged) and is live on ember.austinsego.com. `tasting-form` holds only docs so far.
-- verified 2026-09-25 on claude01: `~/Projects/ember` exists, and git, gh, `rsvg-convert`, Chromium, `playwright-core`, and the superpowers plugin all work. Re-verify with `npm ci && npm test && npm run test:ui -- baseline` before Task 1.
-- assumed: iOS 26 Clear-mode rendering of the flame, and `status-bar-style: default` behavior in dark mode. Austin's phone check (Task 5 Step 7) settles both.
+- verified 2026-09-25 on claude01: Tasks 1–4 and Task 5 Steps 1–5 are committed and pushed (`696a043..8b411ae`). `npm test` passes 61/61 plus the dry-run, and all 8 UI checks pass in light and dark (16/16).
+- verified: a fresh Opus reviewer read the whole branch. It found no Critical issues. Three fixes landed in `8b411ae`, each with a check that failed first: the tapped tag box now stays put when the Tasted line wraps, negated notes ("cup of tea", "with coffee", "no real bitterness", "creamier") no longer count as flavors, and a later "no" removes a cigar from "Would smoke again".
+- assumed: iOS 26 Clear-mode rendering of the flame, and `status-bar-style: default` in dark mode. The phone check (Task 5 Step 7) settles both.
+- Not deployed. `main` and ember.austinsego.com still run the quick-log build.
 
 **Next 3 actions**
-1. `cd ~/Projects/ember && git fetch && git checkout tasting-form && git pull && npm ci`
-2. Execute Tasks 1–4 with superpowers:executing-plans. Commit and push after each task.
-3. Task 5: run Steps 1–5, then stop at Step 6 and hand the deploy command to Austin (Mac only).
+1. On the Mac: `cd /usr/local/ember && git fetch && git checkout tasting-form && git pull && npm ci && npm test && npm run deploy`
+2. Phone check, Task 5 Step 7 (about 5 minutes).
+3. Task 5 Step 8: open the PR from `tasting-form` and merge it into `main`.
+
+**Deferred minors from the review** (not fixed; pick up after merge if wanted)
+- The save bar sits 1px above the tab bar (`--bar:49px`, but the tab bar renders at 48px). task3's `saveAboveFold` `+1` tolerance hides it.
+- In edit mode the header keeps "No. N". The spec says it should read "Editing <name>".
+- In dark mode the scrim is a light wash (`--pen` at 40%), so it brightens the page behind the sheet.
+- One stray year (an imported `0202-…` date) fills the tally with empty rows.
+- The CSV writes raw codes (`good`, `canoe`) instead of the labels "just right" and "canoed".
+- The Brand and Wrapper cells have no `role` or `tabindex`, and Palate family rows lose focus when they re-render.
+- "White pepper" also counts as black pepper, and "hazelnut" and "walnut" miss the Nut family. Both follow the spec's lexicon.
 
 **Open questions:** none.
 
-**Credentials needed:** GitHub via `gh` on claude01 (already set up). Cloudflare wrangler lives on the Mac only, and Austin deploys.
+**Credentials needed:** Cloudflare wrangler lives on the Mac only, and Austin deploys. GitHub via `gh` works on claude01.
 
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
