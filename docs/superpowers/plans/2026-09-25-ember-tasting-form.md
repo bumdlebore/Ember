@@ -2,7 +2,7 @@
 
 ## Handoff — 2026-09-25 (claude01, after the build)
 
-- [ ] Resume: deploy, phone check, and finish the branch. Tick this in Task 5 Step 8.
+- [x] Resume: deploy, phone check, and finish the branch. Done 2026-09-25: deployed `2268035c`, Austin's phone check passed, merged to main.
 
 **Goal:** Ship branch `tasting-form` (Task 5 Steps 6–8).
 
