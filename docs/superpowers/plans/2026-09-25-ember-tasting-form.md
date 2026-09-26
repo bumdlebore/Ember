@@ -12,7 +12,8 @@
 - verified 2026-09-25 on claude01: Tasks 1–4 and Task 5 Steps 1–5 are committed and pushed (`696a043..8b411ae`). `npm test` passes 61/61 plus the dry-run, and all 8 UI checks pass in light and dark (16/16).
 - verified: a fresh Opus reviewer read the whole branch. It found no Critical issues. Three fixes landed in `8b411ae`, each with a check that failed first: the tapped tag box now stays put when the Tasted line wraps, negated notes ("cup of tea", "with coffee", "no real bitterness", "creamier") no longer count as flavors, and a later "no" removes a cigar from "Would smoke again".
 - assumed: iOS 26 Clear-mode rendering of the flame, and `status-bar-style: default` in dark mode. The phone check (Task 5 Step 7) settles both.
-- Not deployed. `main` and ember.austinsego.com still run the quick-log build.
+- verified 2026-09-25 (Mac): deployed version `2268035c-f7c1-4298-8c31-7cc5298c74b5` from `c27c0f0`. Access still returns 302 for `/` and `/fonts/*`. `c27c0f0` made tf3's wrap check font-independent, because on New York (macOS/iOS) the line never wrapped at the 5th tag, so the check wasn't exercising the fix.
+- Remaining: the phone check (Task 5 Step 7), then merge (Step 8).
 
 **Next 3 actions**
 1. On the Mac: `cd /usr/local/ember && git fetch && git checkout tasting-form && git pull && npm ci && npm test && npm run deploy`
