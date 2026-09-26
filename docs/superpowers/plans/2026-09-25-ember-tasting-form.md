@@ -1,5 +1,28 @@
 # Ember tasting form Implementation Plan
 
+## Handoff — 2026-09-25 (Claude Code desktop on MacBook → claude01, Opus 5.5)
+
+- [ ] Resume: build the tasting form from this plan on claude01. Tick this in Task 5 Step 8.
+
+**Goal:** Execute Tasks 1–5 below on branch `tasting-form`.
+
+**Decisions made:** see the spec (`docs/superpowers/specs/2026-09-25-ember-tasting-form-design.md`). Austin approved the spec, the plan, native execution on claude01, the Barlow Condensed download (Task 1 Step 3), and the Punch date fix. This repo is Ember's only canonical record, so don't write Ember notes into Homelab files.
+
+**Current state**
+- verified 2026-09-25: `main` includes the quick-log work (PR #1 merged) and is live on ember.austinsego.com. `tasting-form` holds only docs so far.
+- verified 2026-09-25 on claude01: `~/Projects/ember` exists, and git, gh, `rsvg-convert`, Chromium, `playwright-core`, and the superpowers plugin all work. Re-verify with `npm ci && npm test && npm run test:ui -- baseline` before Task 1.
+- assumed: iOS 26 Clear-mode rendering of the flame, and `status-bar-style: default` behavior in dark mode. Austin's phone check (Task 5 Step 7) settles both.
+
+**Next 3 actions**
+1. `cd ~/Projects/ember && git fetch && git checkout tasting-form && git pull && npm ci`
+2. Execute Tasks 1–4 with superpowers:executing-plans. Commit and push after each task.
+3. Task 5: run Steps 1–5, then stop at Step 6 and hand the deploy command to Austin (Mac only).
+
+**Open questions:** none.
+
+**Credentials needed:** GitHub via `gh` on claude01 (already set up). Cloudflare wrangler lives on the Mac only, and Austin deploys.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Restyle Ember as a printed tasting form, and add a 47-tag flavor wheel, draw/burn/again fields, and a scorecard Palate.
