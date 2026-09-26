@@ -252,29 +252,19 @@
 
   <!-- ===== PALATE ===== -->
   <section class="panel" id="palate" role="tabpanel">
-    <div class="card verdict" id="verdict"></div>
-
-    <div class="stat-strip" id="statstrip"></div>
-
-    <div class="sectionhead"><h2>What you reach for</h2><span class="c">avg rating · ×N = times logged</span></div>
-    <div class="card pad rank" id="flavors"></div>
-
-    <div class="grid two" style="margin-top:12px">
-      <div class="card pad rank" id="rk-origin"></div>
-      <div class="card pad rank" id="rk-wrapper"></div>
+    <h2 class="ptitle">Your palate</h2>
+    <p class="psum" id="psum"></p>
+    <div id="verdict"></div>
+    <div class="psec"><div class="lab">Smokes by year</div><div id="tally"></div></div>
+    <div class="psec"><div class="lab rowlbl"><span>Flavors, by smokes</span><span>avg</span></div>
+      <div id="flavors"></div></div>
+    <div class="psec"><div class="lab">Would smoke again</div><div id="buyagain"></div></div>
+    <div class="psec" id="drawburn"></div>
+    <div class="psec tables">
+      <div id="rk-origin"></div><div id="rk-wrapper"></div><div id="rk-binder"></div>
+      <div id="rk-filler"></div><div id="rk-body"></div><div id="rk-shape"></div>
     </div>
-    <div class="grid two">
-      <div class="card pad rank" id="rk-binder"></div>
-      <div class="card pad rank" id="rk-filler"></div>
-    </div>
-    <div class="grid two">
-      <div class="card pad rank" id="rk-body"></div>
-      <div class="card pad rank" id="rk-shape"></div>
-    </div>
-
-    <div class="sectionhead"><h2>Top of the humidor</h2><span class="c">highest rated</span></div>
-    <div class="card" id="toprated"></div>
-
+    <div class="psec"><div class="lab">Top rated</div><div id="toprated"></div></div>
     <div class="foot">
       <button id="backfill">Fill blanks from catalog</button>
       <button id="exp-json">Export backup (.json)</button>
@@ -396,7 +386,7 @@ const SEED = [
  {d:"2021-10-14",b:"Drew Estate",l:"Estelli",sh:"Toro",bd:"",w:"Ecuador Habano",wn:"",bn:"Honduran",fi:["Nicaraguan"],o:"",r:4.75,s:0,n:""},
  {d:"2021-10-21",b:"Rocky Patel",l:"Connecticut Vintage 1999",sh:"Double Toro",bd:"Light",w:"Connecticut",wn:"",bn:"",fi:["Dominican","Nicaraguan"],o:"",r:3.75,s:0,n:"Definitely a bite to it, peppery, almost limey. Not really my cup of tea, but could tell it was a quality cigar."},
  {d:"2021-12-26",b:"Drew Estate",l:"Undercrown Shade",sh:"Toro",bd:"Med",w:"Ecuador Connecticut",wn:"",bn:"Sumatra",fi:["Dominican","Nicaraguan"],o:"",r:4,s:0,n:"Smooth. Leathery. Would happily smoke several more (journalled too long after — can't remember all the notes)."},
- {d:"2021-01-01",b:"Punch",l:"Cigar City Brewing",sh:"Toro",bd:"Full",w:"Honduran Habano",wn:"Maduro",bn:"Honduran Habano",fi:["Honduran Habano"],o:"",r:4,s:0,n:"Good flavor up front. Leathery and meaty. But left a pretty bitter aftertaste."},
+ {d:"2022-01-01",b:"Punch",l:"Cigar City Brewing",sh:"Toro",bd:"Full",w:"Honduran Habano",wn:"Maduro",bn:"Honduran Habano",fi:["Honduran Habano"],o:"",r:4,s:0,n:"Good flavor up front. Leathery and meaty. But left a pretty bitter aftertaste."},
  {d:"2022-01-18",b:"Rocky Patel",l:"Connecticut Vintage 1999",sh:"Double Toro",bd:"Light",w:"Connecticut",wn:"",bn:"",fi:["Dominican","Nicaraguan"],o:"",r:4,s:0,n:"Used a V cut this time. Less acidic bite, softer flavors. Still left strong aftertaste and smelly clothes."},
  {d:"2022-03-20",b:"Arturo Fuente",l:"Hemingway Signature",sh:"",bd:"",w:"Cameroon",wn:"",bn:"Dominican",fi:["Dominican"],o:"",r:null,s:0,n:""},
  {d:"2022-06-22",b:"Casa Magna",l:"Liga F",sh:"Double Toro",bd:"Med",w:"Ecuador Corojo",wn:"Sun Grown",bn:"Dominican",fi:["Dominican","Nicaraguan"],o:"",r:4.75,s:0,n:"Leathery, slightly sweet, woody, super smooth."},
@@ -452,10 +442,16 @@ const REF = [{"l":"1876 Reserve","w":"Connecticut","o":"Dominican","bn":"Sumatra
 const KEY="ember.journal.v1";
 let data=[];
 data=load();
+/* One-time data fixes, matched on content so they apply once and then never match again.
+   2026-09-25: Punch Cigar City Brewing was logged 2021-01-01 (sheet row 7); it sits between
+   2021-12-26 and 2022-01-18, so the year was a typo. Austin confirmed the fix. */
+function applyFixups(list){let n=0;
+  list.forEach(e=>{if(e.b==="Punch"&&e.l==="Cigar City Brewing"&&e.d==="2021-01-01"){e.d="2022-01-01";e.u=Date.now();n++;}});
+  return n;}
 function load(){let d=null;try{const r=localStorage.getItem(KEY);if(r)d=JSON.parse(r);}catch(e){}
   if(!Array.isArray(d)) d=SEED.map((x,i)=>({id:"seed"+i,...x}));
   d.forEach(e=>{if(typeof e.u!=="number")e.u=Date.parse(e.d)||Date.now();if(e.deleted==null)e.deleted=0;});
-  save(d);return d;}
+  applyFixups(d);save(d);return d;}
 function save(d){data=d||data;try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){}}
 
 /* ============ HELPERS ============ */
@@ -473,16 +469,6 @@ function localToday(d=new Date()){const p=n=>String(n).padStart(2,"0");
 const ESC={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>ESC[c]);}
 
-/* flavor lexicon -> regex */
-const FLAVORS=[
- ["Chocolate",/chocolat|cocoa|s'?more/i],["Sweetness",/sweet|molasses|honey|sugar/i],
- ["Pepper / spice",/pepper|spice|spicy/i],["Leather",/leather/i],
- ["Cracker / toast",/cracker|toast|bread|bready|graham/i],["Creamy",/cream/i],
- ["Coffee",/coffee|espresso/i],["Nutty",/nut|almond|cashew/i],
- ["Wood / cedar",/wood|cedar|oak|barrel/i],["Dark fruit",/raisin|cherry|fig|plum|fruit|apricot/i],
- ["Smooth",/smooth/i],["Earthy / meaty",/earth|meaty|funk/i]
-];
-
 /* ============ ANALYSIS ============ */
 function agg(keyFn){
   const m={};
@@ -499,90 +485,100 @@ function topBy(rows,minN,mean){
     .sort((a,b)=>b.shr-a.shr||b.n-a.n);
 }
 
-function renderPalate(){
-  const R=rated();
-  if(!R.length){$("#verdict").innerHTML='<div class="pad empty">Log a few smokes and your palate reads out here.</div>';return;}
-
-  const avg=R.reduce((a,e)=>a+e.r,0)/R.length;
-  const origin=topBy(agg(e=>[e.o]),2,avg);
-  const wrapper=topBy(agg(e=>[e.w]),2,avg);
-  const binder=topBy(agg(e=>[e.bn]),2,avg);
-  const filler=topBy(agg(e=>[...(e.fi||[])]),2,avg);
-  const body=topBy(agg(e=>[e.bd]),2,avg);
-  const shape=topBy(agg(e=>[e.sh]),2,avg);
-  const maduro=R.filter(e=>/maduro/i.test(e.wn)||/maduro/i.test(e.l));
-  const madAvg=maduro.length?maduro.reduce((a,e)=>a+e.r,0)/maduro.length:0;
-  const social=R.filter(e=>e.s), solo=R.filter(e=>!e.s);
-  const socAvg=social.length?social.reduce((a,e)=>a+e.r,0)/social.length:0;
-  const soloAvg=solo.length?solo.reduce((a,e)=>a+e.r,0)/solo.length:0;
-
-  /* verdict sentence */
-  const headTop=rows=>rows[0]&&rows[0].n>=HEADLINE_MIN_N?rows[0]:null;
-  const o=headTop(origin), w=headTop(wrapper), bd=body[0];
-  let line;
-  if(o){line=`You're a <em>${esc(o.k)}</em> smoker`;
-    if(w) line+=`, happiest under a <em>${esc(w.k)}</em> wrapper`;}
-  else if(w) line=`You're happiest under a <em>${esc(w.k)}</em> wrapper`;
-  else line=`Log a few more and a pattern shows up here`;
-  if(o&&madAvg>=avg+0.1 && maduro.length>=3) line+=` — and a <em>maduro</em> at heart`;
-  line+=`.`;
-  $("#verdict").innerHTML=`
-    <h2>Your palate, read from ${R.length} rated smokes</h2>
-    <div class="line">${line}</div>
-    <div class="meta">
-      ${bd?`<span>Sweet spot body · <b>${esc(bd.k)}</b></span>`:""}
-      ${maduro.length>=3?`<span>Maduro avg · <b>${madAvg.toFixed(2)}</b></span>`:""}
-      ${social.length?`<span>Social vs solo · <b>${socAvg.toFixed(2)} / ${soloAvg.toFixed(2)}</b></span>`:""}
-    </div>`;
-
-  /* stat strip */
-  const best=R.reduce((a,b)=>b.r>a.r?b:a);
-  $("#statstrip").innerHTML=`
-    <div class="stat"><div class="v">${avg.toFixed(2)}</div><div class="k">avg rating</div></div>
-    <div class="stat"><div class="v">${uniq(live().map(e=>e.b)).length}</div><div class="k">brands tried</div></div>
-    <div class="stat"><div class="v">${best.r}<small>★</small></div><div class="k">your top score</div></div>`;
-
-  /* flavors */
-  const fl=FLAVORS.map(([name,re])=>{
-    const hit=R.filter(e=>re.test(e.n||""));
-    return{name,n:hit.length,avg:hit.length?hit.reduce((a,e)=>a+e.r,0)/hit.length:0};
-  }).filter(f=>f.n>0).sort((a,b)=>b.n-a.n);
-  const fmax=Math.max(...fl.map(f=>f.n),1);
-  $("#flavors").innerHTML=`<h3>Flavors in your notes</h3>
-    <div class="hint">How often a descriptor shows up, and your average rating when it does.</div>
-    ${fl.map(f=>`<div class="rankrow">
-      <div class="name"><span>${f.name}</span></div>
-      <div class="bar"><i style="width:${Math.round(f.n/fmax*100)}%"></i></div>
-      <div class="score">${f.avg.toFixed(2)}</div>
-    </div>`).join("")}
-    <div class="chips" style="margin-top:12px">
-      ${fl.slice(0,6).map(f=>`<span class="chip">${f.name} <span class="c">×${f.n}</span></span>`).join("")}
-    </div>`;
-
-  rankCard("#rk-origin","Origin","where the tobacco's from",origin);
-  rankCard("#rk-wrapper","Wrapper leaf","the outer leaf — drives flavor most",wrapper);
-  rankCard("#rk-binder","Binder","holds the bunch together",binder);
-  rankCard("#rk-filler","Filler","the core blend",filler);
-  rankCard("#rk-body","Body","strength / weight",body,true);
-  rankCard("#rk-shape","Shape / vitola","size & format",shape);
-
-  /* top rated */
-  const top=[...R].sort((a,b)=>b.r-a.r||(b.d>a.d?1:-1)).slice(0,6);
-  $("#toprated").innerHTML=top.map((e,i)=>entryRow(e,i===top.length-1)).join("");
+/* which tags and families a smoke hits: its checked tags plus regex hits in its notes */
+function hits(e){
+  const n=e.n||"", tagsHit=new Set(e.t||[]), fams=new Set();
+  WHEEL.forEach(F=>{F.tags.forEach(([t,re])=>{if(re.test(n))tagsHit.add(t);});
+    if(F.tags.some(([t])=>tagsHit.has(t))||(F.re&&F.re.test(n)))fams.add(F.f);});
+  return {tags:tagsHit,fams};
 }
-
-function rankCard(sel,title,hint,rows,keepOrder){
-  if(!rows.length){$(sel).innerHTML=`<h3>${title}</h3><div class="hint">${hint}</div>
-    <div class="hint" style="margin-top:8px;color:var(--faint)">Not enough data yet.</div>`;return;}
-  const max=5;
-  let r=rows.slice(0,6);
-  if(keepOrder) r=[...r].sort((a,b)=>bodyOrder.indexOf(a.k)-bodyOrder.indexOf(b.k));
-  $(sel).innerHTML=`<h3>${title}</h3><div class="hint">${hint}</div>
-    ${r.map(x=>`<div class="rankrow">
-      <div class="name"><span>${esc(x.k)}</span><span class="n" title="${x.n} logged">×${x.n}</span></div>
-      <div class="bar"><i style="width:${Math.round(x.avg/max*100)}%"></i></div>
-      <div class="score">${x.avg.toFixed(2)}</div>
-    </div>`).join("")}`;
+function flavorStats(list){
+  const H=list.map(e=>({e,h:hits(e)}));
+  const avgOf=xs=>{const rs=xs.filter(x=>typeof x.e.r==="number");return rs.length?rs.reduce((a,x)=>a+x.e.r,0)/rs.length:null;};
+  return WHEEL.map(F=>{const fh=H.filter(x=>x.h.fams.has(F.f));
+    return {F,n:fh.length,avg:avgOf(fh),
+      tags:F.tags.map(([t])=>{const th=H.filter(x=>x.h.tags.has(t));return {t,n:th.length,avg:avgOf(th)};})
+        .filter(x=>x.n).sort((a,b)=>b.n-a.n)};})
+    .filter(x=>x.n).sort((a,b)=>b.n-a.n);
+}
+const plural=(n,w)=>n+" "+w+(n===1?"":"s");
+let openStatFam=null;
+function renderFlavors(list){
+  const fs=flavorStats(list), max=Math.max(1,...fs.map(x=>x.n)), fmt=a=>a==null?"":a.toFixed(2);
+  const bar=n=>`<span class="bar" style="width:${Math.round(n/max*100)}%"></span>`;
+  $("#flavors").innerHTML=fs.length?fs.map(x=>`<button type="button" class="frow" data-f="${esc(x.F.f)}" aria-expanded="${openStatFam===x.F.f}">
+      <span class="nm">${esc(x.F.f)}</span>${bar(x.n)}<span class="n">${x.n}</span><span class="a">${fmt(x.avg)}</span></button>${
+      openStatFam===x.F.f?x.tags.map(t=>`<div class="frow sub"><span class="nm">${esc(t.t)}</span>${bar(t.n)}<span class="n">${t.n}</span><span class="a">${fmt(t.avg)}</span></div>`).join(""):""}`).join("")
+    :`<p class="note">Check flavors on the Log form and they add up here.</p>`;
+}
+$("#flavors").addEventListener("click",e=>{const b=e.target.closest("button.frow");if(!b)return;
+  openStatFam=openStatFam===b.dataset.f?null:b.dataset.f;renderFlavors(live());});
+function tallySvg(n){let s="";
+  for(let i=0;i<n;i++){const x0=Math.floor(i/5)*26,k=i%5;
+    s+=k<4?`<line x1="${x0+k*5}" y1="3" x2="${x0+k*5}" y2="17"/>`:`<line class="strike" x1="${x0-3}" y1="14" x2="${x0+18}" y2="5"/>`;}
+  const w=Math.max(1,Math.ceil(n/5))*26;
+  return `<svg width="${w}" height="20" viewBox="0 0 ${w} 20" aria-hidden="true">${s}</svg>`;}
+function renderTally(list){
+  const by={};list.forEach(e=>{const y=(e.d||"").slice(0,4);if(y)by[y]=(by[y]||0)+1;});
+  const ys=Object.keys(by).sort();
+  if(!ys.length){$("#tally").innerHTML="";return;}
+  const rows=[];
+  for(let y=+ys[0];y<=+ys[ys.length-1];y++){const n=by[y]||0;
+    rows.push(`<div class="tally"><span class="y">${y}</span>${tallySvg(n)}<span class="c">${n}</span></div>`);}
+  $("#tally").innerHTML=rows.join("");
+}
+function renderBuyAgain(list){
+  const seen=new Map();
+  [...list].sort((a,b)=>(b.d||"").localeCompare(a.d||"")).forEach(e=>{if(e.ag!=="yes")return;
+    const k=((e.b||"")+"|"+(e.l||"")).toLowerCase();if(!seen.has(k))seen.set(k,e);});
+  $("#buyagain").innerHTML=seen.size?[...seen.values()].map(e=>entryRow(e)).join("")
+    :`<p class="note">Mark "yes" under Again and they collect here.</p>`;
+}
+function renderDrawBurn(list){
+  const line=k=>{const set=list.filter(e=>e[k]);if(set.length<3)return"";
+    return `<div class="dbline"><span class="lab">${OPTS[k].label}</span>${
+      OPTS[k].vals.map(([v,t])=>`${t} ${set.filter(e=>e[k]===v).length}`).join(", ")} of ${set.length}</div>`;};
+  const html=line("dr")+line("bu");
+  $("#drawburn").innerHTML=html?`<div class="lab">Draw and burn</div>${html}`:"";
+}
+function rankTable(sel,title,rows,keepOrder){
+  let r=rows.slice(0,6);if(keepOrder)r=[...r].sort((a,b)=>bodyOrder.indexOf(a.k)-bodyOrder.indexOf(b.k));
+  $(sel).innerHTML=`<div class="tbl"><span class="h">${title}</span><span class="h r">n</span><span class="h r">avg</span>${
+    r.length?r.map(x=>`<span class="k">${esc(x.k)}</span><span class="r">${x.n}</span><span class="r">${x.avg.toFixed(2)}</span>`).join("")
+    :`<span class="k" style="grid-column:1/-1;color:var(--faint)">Not enough smokes yet</span>`}</div>`;
+}
+function renderPalate(){
+  const L=live(), R=rated();
+  if(!L.length){$("#psum").textContent="No smokes yet. Log one and your scorecard starts here.";
+    ["#verdict","#tally","#flavors","#buyagain","#drawburn","#toprated"].forEach(s=>$(s).innerHTML="");return;}
+  const first=L.map(e=>e.d).filter(Boolean).sort()[0]||localToday();
+  const since=new Date(+first.slice(0,4),+first.slice(5,7)-1,1).toLocaleDateString("en-US",{month:"long",year:"numeric"});
+  const avg=R.length?R.reduce((a,e)=>a+e.r,0)/R.length:0;
+  $("#psum").textContent=`${plural(L.length,"smoke")} and ${plural(uniq(L.map(e=>e.b)).length,"brand")} since ${since}${R.length?`, averaging ${avg.toFixed(2)}`:""}.`;
+  let v="";
+  if(R.length){
+    const origin=topBy(agg(e=>[e.o]),2,avg), wrapper=topBy(agg(e=>[e.w]),2,avg), body=topBy(agg(e=>[e.bd]),2,avg);
+    const maduro=R.filter(e=>/maduro/i.test(e.wn)||/maduro/i.test(e.l));
+    const madAvg=maduro.length?maduro.reduce((a,e)=>a+e.r,0)/maduro.length:0;
+    const social=R.filter(e=>e.s), solo=R.filter(e=>!e.s);
+    const mean=xs=>xs.reduce((a,e)=>a+e.r,0)/xs.length;
+    const headTop=rows=>rows[0]&&rows[0].n>=HEADLINE_MIN_N?rows[0]:null;
+    const o=headTop(origin), w=headTop(wrapper), bd=body[0];
+    let line;
+    if(o){line=`You're a ${esc(o.k)} smoker`;if(w)line+=`, happiest under a ${esc(w.k)} wrapper`;}
+    else if(w)line=`You're happiest under a ${esc(w.k)} wrapper`;
+    else line=`Log a few more and a pattern shows up here`;
+    if(o&&madAvg>=avg+0.1&&maduro.length>=3)line+=`, and a maduro at heart`;
+    v=`<p class="line">${line}.</p>${bd?`<div class="dbline"><span class="lab">Sweet spot body</span>${esc(bd.k)}</div>`:""}${
+      social.length&&solo.length?`<div class="dbline"><span class="lab">With friends</span>${mean(social).toFixed(2)} avg, alone ${mean(solo).toFixed(2)}</div>`:""}`;
+    rankTable("#rk-origin","Origin",origin);rankTable("#rk-wrapper","Wrapper",wrapper);
+    rankTable("#rk-binder","Binder",topBy(agg(e=>[e.bn]),2,avg));
+    rankTable("#rk-filler","Filler",topBy(agg(e=>[...(e.fi||[])]),2,avg));
+    rankTable("#rk-body","Body",body,true);rankTable("#rk-shape","Shape",topBy(agg(e=>[e.sh]),2,avg));
+  }else ["#rk-origin","#rk-wrapper","#rk-binder","#rk-filler","#rk-body","#rk-shape"].forEach(s=>$(s).innerHTML="");
+  $("#verdict").innerHTML=v;
+  renderTally(L);renderFlavors(L);renderBuyAgain(L);renderDrawBurn(L);
+  $("#toprated").innerHTML=[...R].sort((a,b)=>b.r-a.r||(b.d>a.d?1:-1)).slice(0,6).map(e=>entryRow(e)).join("");
 }
 
 /* ============ JOURNAL ============ */
@@ -929,10 +925,10 @@ function dl(name,text,type){const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();}
 $("#exp-json").onclick=()=>{dl("ember-journal.json",JSON.stringify(live(),null,2),"application/json");toast("Backup downloaded");};
 $("#exp-csv").onclick=()=>{
-  const cols=["d","b","l","sh","bd","w","wn","bn","fi","o","r","s","n"];
-  const head=["Date","Brand","Blend","Shape","Body","Wrapper","WrapperNote","Binder","Filler","Origin","Rating","Social","Notes"];
+  const cols=["d","b","l","sh","bd","w","wn","bn","fi","o","r","s","n","t","dr","bu","ag"];
+  const head=["Date","Brand","Blend","Shape","Body","Wrapper","WrapperNote","Binder","Filler","Origin","Rating","Social","Notes","Flavors","Draw","Burn","Again"];
   const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=live().map(e=>cols.map(c=>esc(c==="fi"?(e.fi||[]).join(", "):e[c])).join(","));
+  const rows=live().map(e=>cols.map(c=>esc(c==="fi"||c==="t"?(e[c]||[]).join(", "):e[c])).join(","));
   dl("ember-journal.csv",[head.join(","),...rows].join("\n"),"text/csv");toast("CSV downloaded");};
 $("#imp").onclick=()=>$("#impfile").click();
 $("#impfile").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
