@@ -39,15 +39,21 @@
   $("#q").value = ""; renderJournal();
   r.journalShowsTags = document.querySelector(`#list .entry[data-id="${saved.id}"] .etags`)?.textContent === "chocolate, black pepper, clove";
   // Review fix: the tapped box must stay under the finger when the Tasted line wraps.
-  clearForm(); fam(5).click();
-  ["black pepper", "white pepper", "cinnamon", "clove"].forEach(tick);
-  window.scrollTo(0, 300);
-  const box = () => document.querySelector('.famtags input[data-t="nutmeg"]');
-  const h0 = $("#tasted").offsetHeight, top0 = box().getBoundingClientRect().top;
-  tick("nutmeg");
-  r.wrapHappened = $("#tasted").offsetHeight > h0 + 10;
-  r.boxStaysOnWrap = Math.abs(box().getBoundingClientRect().top - top0) < 2;
-  r.focusKept = document.activeElement === box();
+  // Where the line wraps depends on the serif the platform resolves (New York on Apple,
+  // a wider fallback on Linux), so tick Spice tags until one tick wraps the line, then measure that one.
+  clearForm(); fam(5).click(); window.scrollTo(0, 300);
+  r.wrapHappened = false; r.boxStaysOnWrap = false; r.focusKept = false;
+  for (const t of ["black pepper", "white pepper", "cinnamon", "clove", "nutmeg", "anise"]) {
+    const box = () => document.querySelector(`.famtags input[data-t="${t}"]`);
+    const h0 = $("#tasted").offsetHeight, top0 = box().getBoundingClientRect().top;
+    tick(t);
+    if ($("#tasted").offsetHeight > h0 + 10) {
+      r.wrapHappened = true;
+      r.boxStaysOnWrap = Math.abs(box().getBoundingClientRect().top - top0) < 2;
+      r.focusKept = document.activeElement === box();
+      break;
+    }
+  }
   clearForm();
   return r;
 })()
