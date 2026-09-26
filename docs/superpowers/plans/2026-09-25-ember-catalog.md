@@ -1,25 +1,29 @@
 # Ember private catalog Implementation Plan
 
-## Handoff — 2026-09-26 (Claude Code desktop on MacBook → claude01, Opus 5.5)
+## Handoff — 2026-09-26 evening (claude01, Opus 5.5)
 
-- [ ] Resume: build the private catalog from this plan on claude01. Tick this in Task 5 Step 6.
+- [ ] Resume: finish Task 5 from here. Tick this in Task 5 Step 6.
 
-**Goal:** Execute Tasks 1–5 below on branch `catalog`.
+**Goal:** Tasks 1–4 are done and pushed on `catalog`. The full crawl is running. What's left is Task 5: build on claude01, then Austin's Mac steps.
 
-**Decisions made:** see the spec (`docs/superpowers/specs/2026-09-25-ember-catalog-design.md`). Austin approved the spec, the plan, native execution on claude01, a one-time private crawl of Neptune Cigar (he accepted the terms risk), one entry per blend with its sizes, and D1 storage. Ember's only canonical record is this repo, so don't write Ember notes into Homelab files. Any older claude01 Ember session is stale and can be ignored: PR #2 was merged 2026-09-26 03:26Z.
+**Decisions made:** see the spec. Austin approved the spec, the plan, native execution on claude01, a one-time private crawl of Neptune Cigar (terms risk accepted), one entry per blend with its sizes, and D1 storage. Execution-time rulings and the final review are in the git-ignored ledger `.superpowers/sdd/2026-09-25-ember-catalog/progress.md` on claude01. The ones that change the plan:
+- `parsePage` takes brand and blend from the last two breadcrumbs. Neptune puts a category crumb ("Flavored") before some brands.
+- `build.mjs` takes each blend field from the most common value across its sizes, not the first page. A size keeps its own `w`, `wn`, `bd` where they differ, and tapping it applies them. Values that are a spec label or over 60 characters are dropped.
+- `findMatch` skips rows of a different brand, because catalog names no longer carry the brand.
+- The crawl runs as the transient systemd unit `ember-crawl`, so a `claude-remote` restart can't kill it.
 
 **Current state**
-- verified 2026-09-26: `main` at `7ee726f` includes the tasting form (PR #2), deployed as `2268035c`. The `catalog` branch holds only the spec and plan.
-- verified 2026-09-25: Neptune's `robots.txt` allows all paths. `sitemap.xml` lists 6,544 `/cigars/` pages. A size page carries a `BreadcrumbList` (Brand, Blend) and the spec labels listed in the spec. Famous Smoke serves a bot challenge and is out.
-- verified 2026-09-26 on claude01: `~/Projects/ember` is clean on `main`. Node 24, gh, and the UI runner all work.
-- assumed: undici's `fetch` decompresses gzip itself, and the null rate on real pages stays under 30%. Task 3 Steps 3–4 check both.
+- verified 2026-09-26: `npm test` passes (65 Worker + 19 tools tests + dry-run). All 18 UI checks pass (9 checks, light and dark). HEAD is `842530d` on `origin/catalog`.
+- verified 2026-09-26: 200-page sample had a null rate of 0.00, no missing origins, and 1 missing strength. The sample build had no unmapped strengths.
+- verified 2026-09-26: the full crawl started 2026-09-26T19:40Z as `ember-crawl.service` (about 3.3 s per page, 6,338 pages left). Expected finish is around 2026-09-27T01:30Z. Check with `systemctl is-active ember-crawl; wc -l < ~/ember-data/neptune.jsonl; tail -2 ~/ember-data/crawl.log`. If it stopped early, restart it with `sudo systemd-run --unit=ember-crawl --uid=austin --gid=austin --working-directory=/home/austin/Projects/ember -E HOME=/home/austin --property=StandardOutput=append:/home/austin/ember-data/crawl.log --property=StandardError=append:/home/austin/ember-data/crawl.log /usr/bin/node tools/catalog/crawl.mjs`. It resumes.
+- `~/ember-data/legacy-ci.json` holds the 1,238 legacy rows. `~/ember-data/neptune.smoke1.jsonl` is the parked pre-fix smoke output (5 lines) and can be removed.
 
 **Next 3 actions**
-1. `cd ~/Projects/ember && git fetch && git checkout catalog && git pull && npm ci`
-2. Tasks 1 and 2, then Task 3: after the smoke and sample checks pass, start the full crawl in the background and record its start time here.
-3. Task 4 while the crawl runs. Then Task 5 Steps 1–2 after it finishes. Stop at Step 3 and hand the Mac steps to Austin.
+1. After the crawl finishes: Task 5 Steps 1–2 on claude01 (`node tools/catalog/build.mjs`, then inspect Serie V Melanio).
+2. Task 5 Step 3: update this block, push, and give Austin the Mac command.
+3. Task 5 Step 4 on the Mac, each production write only after Austin says yes in chat.
 
-**Open questions:** none.
+**Open questions:** "Colorado Maduro" is on about 16% of pages, but the spec's wrapper-note list is exact (Maduro, Oscuro, Claro, Colorado), so it becomes no note. Ask Austin whether it should count.
 
 **Credentials needed:** GitHub via `gh` on claude01 (set up). Cloudflare wrangler lives on the Mac only, so the schema, load, and deploy steps are Austin's Mac steps.
 
