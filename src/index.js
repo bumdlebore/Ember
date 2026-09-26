@@ -7,7 +7,17 @@ import ICON_180 from "../public/icon-180.png";
 import ICON_192 from "../public/icon-192.png";
 import ICON_512 from "../public/icon-512.png";
 
+import FONT_500 from "../public/fonts/barlow-condensed-500.woff2";
+import FONT_600 from "../public/fonts/barlow-condensed-600.woff2";
+import FONT_700 from "../public/fonts/barlow-condensed-700.woff2";
+
 const ICONS = { "/icon-180.png": ICON_180, "/icon-192.png": ICON_192, "/icon-512.png": ICON_512 };
+
+const FONTS = {
+  "/fonts/barlow-condensed-500.woff2": FONT_500,
+  "/fonts/barlow-condensed-600.woff2": FONT_600,
+  "/fonts/barlow-condensed-700.woff2": FONT_700,
+};
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -85,6 +95,16 @@ export default {
         headers: {
           "Content-Type": "image/png",
           "Cache-Control": "public, max-age=86400",
+          "X-Ember-Shell": "1",
+        },
+      });
+    }
+
+    if (FONTS[url.pathname]) {
+      return new Response(FONTS[url.pathname], {
+        headers: {
+          "Content-Type": "font/woff2",
+          "Cache-Control": "public, max-age=604800",
           "X-Ember-Shell": "1",
         },
       });
