@@ -37,12 +37,14 @@ inverted.
 | `--rule` | ruled lines, boxes, dividers | `#C9D8CE` | `#2A3530` |
 | `--pen` | his entries | `#1C2333` | `#ECEAE4` |
 | `--mark` | the score circle, the tally strike | `#C2362B` | `#FF6B5B` |
-| `--faint` | placeholders, unchecked options | `#8A968F` | `#5E6B65` |
+| `--faint` | placeholders, unchecked options | `#66736C` | `#7F8C86` |
 
 - Surfaces are flat, with no gradients, glows, shadows, or radial backgrounds.
 - `theme-color` gets two `<meta>` tags, one per `media="(prefers-color-scheme: …)"`.
-- Every text/background pair meets WCAG AA. The Task 1 checks verify this with a contrast
-  computation.
+- Every text/background pair meets WCAG AA. Computed 2026-09-25 against `--paper`: form
+  7.24 and 8.43, pen 15.0 and 14.7, mark 5.21 and 6.33, faint 4.74 and 5.06 (light, dark).
+  The first faint values proposed (`#8A968F`, `#5E6B65`) failed at 2.9 and 3.2, so they were
+  darkened. The UI checks recompute these ratios.
 
 ### Type
 
@@ -50,8 +52,9 @@ inverted.
   labels, numbers, tabs, and buttons, with tabular figures for scores. The woff2 files and
   `OFL.txt` are self-hosted in `public/fonts/`. The Worker serves them behind Access with
   `X-Ember-Shell: 1`, so the service worker caches them and the font works offline.
-  **Downloading the three woff2 files needs Austin's OK at build time.** The build asks, and
-  names the source and size.
+  The files are `BarlowCondensed-{Medium,SemiBold,Bold}.woff2` from `github.com/jpt/barlow`
+  (`fonts/woff2/`, about 60 KB each, so about 180 KB total, cached after the first load),
+  plus `OFL.txt`. Austin approved the download on 2026-09-25.
 - **Pen:** `ui-serif, "New York", Georgia, serif`. On iPhone that's New York, which is built
   in. It covers cigar names, the name input, notes, and his checked tags.
 - The Google Fonts link and the Fraunces, Inter, and JetBrains Mono fonts are removed.
