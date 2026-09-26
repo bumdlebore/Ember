@@ -1,0 +1,59 @@
+// Tasting form Task 3: the flavor wheel. Run: npm run test:ui -- tf3   and   --dark
+(() => {
+  const r = {};
+  r.lexicon = WHEEL.length === 10 && TAG_ORDER.length === 47 && new Set(TAG_ORDER).size === 47;
+  const fam = (i) => document.querySelectorAll("#fams .fam")[i];
+  const tick = (t) => document.querySelector(`.famtags input[data-t="${t}"]`).click();
+  const line = () => [...document.querySelectorAll("#tasted button")].map((b) => b.textContent).join("|");
+  fam(5).click();
+  r.opensOne = document.querySelectorAll(".famtags").length === 1 && fam(5).getAttribute("aria-expanded") === "true";
+  window.scrollTo(0, 300); const y = scrollY;
+  tick("black pepper");
+  r.noJump = Math.abs(scrollY - y) < 2;
+  tick("clove");
+  fam(1).click();
+  r.switchFamily = document.querySelectorAll(".famtags").length === 1 && fam(5).getAttribute("aria-expanded") === "false";
+  tick("chocolate");
+  r.familyCount = fam(5).querySelector("b")?.textContent === "2" && fam(1).querySelector("b")?.textContent === "1";
+  r.tastedLine = line() === "chocolate|black pepper|clove";
+  document.querySelector('#tasted button[data-t="clove"]').click();
+  r.untickFromLine = !tags.has("clove") && fam(5).querySelector("b")?.textContent === "1";
+  fam(5).click(); tick("clove");
+  $("#f-label").value = "Tag Test"; document.querySelector('.rchip[data-r="4"]').click();
+  const n0 = data.length; $("#save").click();
+  const saved = data[0];
+  r.saved = data.length === n0 + 1 && JSON.stringify(saved.t) === JSON.stringify(["chocolate", "black pepper", "clove"]);
+  r.clearedAfterSave = tags.size === 0 && document.querySelectorAll("#tasted button").length === 0 && openFam === null;
+  startEdit(saved.id);
+  r.editLoads = tags.size === 3 && tags.has("clove") && line() === "chocolate|black pepper|clove";
+  $("#cancel").click();
+  smokeAgain(saved.id);
+  r.againLeavesClear = tags.size === 0 && $("#f-label").value === "Tag Test";
+  clearForm();
+  const old = data.find((e) => e.id === "seed9");
+  startEdit(old.id); const u0 = old.u; $("#save").click();
+  const o2 = data.find((e) => e.id === "seed9");
+  r.oldEntryEdits = Array.isArray(o2.t) && o2.t.length === 0 && o2.dr === "" && o2.u > u0 && o2.l === "1926 Maduro";
+  $("#q").value = "clove"; renderJournal();
+  r.searchTags = [...document.querySelectorAll("#list .entry .nm")].some((n) => n.textContent === "Tag Test");
+  $("#q").value = ""; renderJournal();
+  r.journalShowsTags = document.querySelector(`#list .entry[data-id="${saved.id}"] .etags`)?.textContent === "chocolate, black pepper, clove";
+  // Review fix: the tapped box must stay under the finger when the Tasted line wraps.
+  // Where the line wraps depends on the serif the platform resolves (New York on Apple,
+  // a wider fallback on Linux), so tick Spice tags until one tick wraps the line, then measure that one.
+  clearForm(); fam(5).click(); window.scrollTo(0, 300);
+  r.wrapHappened = false; r.boxStaysOnWrap = false; r.focusKept = false;
+  for (const t of ["black pepper", "white pepper", "cinnamon", "clove", "nutmeg", "anise"]) {
+    const box = () => document.querySelector(`.famtags input[data-t="${t}"]`);
+    const h0 = $("#tasted").offsetHeight, top0 = box().getBoundingClientRect().top;
+    tick(t);
+    if ($("#tasted").offsetHeight > h0 + 10) {
+      r.wrapHappened = true;
+      r.boxStaysOnWrap = Math.abs(box().getBoundingClientRect().top - top0) < 2;
+      r.focusKept = document.activeElement === box();
+      break;
+    }
+  }
+  clearForm();
+  return r;
+})()

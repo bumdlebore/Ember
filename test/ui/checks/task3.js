@@ -8,7 +8,7 @@
   r.chipsRoundTrip = vals.every(v=>{const b=document.querySelector(`.rchip[data-r="${v}"]`);
     if(!b)return false;b.click();const ok=rating===v;b.click();return ok&&rating===null;});
   $("#ratechips-low").hidden = true;
-  r.saveAboveFold = $("#save").getBoundingClientRect().bottom <= document.querySelector(".tabbar").getBoundingClientRect().top;
+  r.saveAboveFold = (()=>{const s=$("#save").getBoundingClientRect();return s.top>=0 && s.bottom <= document.querySelector(".tabbar").getBoundingClientRect().top + 1;})();
   r.noZoom = [...document.querySelectorAll("#log input:not([type=checkbox]):not([type=date]),#log select,#log textarea")]
     .every(el=>parseFloat(getComputedStyle(el).fontSize)>=16);
   r.dateLabel = /^Today, /.test($("#datelabel").textContent);
@@ -20,9 +20,9 @@
   first.click();
   r.historyFill = $("#f-brand").value==="Oliva" && $("#f-wrapper").value==="San Andres"
     && $("#f-body").value==="Med-Full" && $("#f-filler").value==="Nicaraguan";
-  r.summary = !$("#summary").hidden && /^Oliva · San Andres Maduro · Nicaraguan · Med-Full$/.test($("#summarytext").textContent);
+  r.summary = $("#c-brand").textContent==="Oliva" && $("#c-wrapper").textContent==="San Andres Maduro";
   inp.value = "Padron 1964"; inp.dispatchEvent(new Event("input"));
-  r.retypeClears = $("#f-brand").value==="" && $("#f-wrapper").value==="" && $("#summary").hidden;
+  r.retypeClears = $("#f-brand").value==="" && $("#f-wrapper").value==="" && $("#c-brand").textContent==="" && $("#c-wrapper").textContent==="";
   inp.value = "serie g maduro"; inp.dispatchEvent(new Event("input"));
   const cat = [...document.querySelectorAll("#sugg .sg")].find(b=>/catalog/.test(b.textContent));
   cat && cat.click();

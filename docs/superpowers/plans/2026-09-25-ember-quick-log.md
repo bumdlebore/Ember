@@ -2,7 +2,7 @@
 
 ## Handoff — 2026-09-25 18:10 (Claude Code desktop on MacBook → claude01, Opus 5.5)
 
-- [ ] Resume: build Ember quick log from this plan on claude01. Tick this in Task 5 Step 5.
+- [x] Resume: build Ember quick log from this plan on claude01. Done 2026-09-25: deployed, phone check passed, PR #1 merged.
 
 **Progress 2026-09-25 (claude01):** Tasks 1–4 are done and pushed, along with the Task 5 Step 1 review fixes (last commit `cbbee91`). `npm test` passes 56/56, and the UI checks for baseline and tasks 2–4 all pass. Next is Task 5 Step 2: Austin deploys from the Mac. Rulings and deferred minors are in the claude01 session's final message and in draft PR #1's body.
 

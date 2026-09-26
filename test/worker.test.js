@@ -478,3 +478,31 @@ describe("install files", () => {
     expect(html).toContain('<link rel="apple-touch-icon" href="/icon-180.png">');
   });
 });
+
+describe("self-hosted fonts", () => {
+  const url = (p) => "https://ember.austinsego.com" + p;
+  const authed = async (p) =>
+    callWorker(new Request(url(p), { headers: { "Cf-Access-Jwt-Assertion": await mintJwt() } }));
+
+  it("refuses a font without an assertion", async () => {
+    const res = await SELF.fetch(url("/fonts/barlow-condensed-600.woff2"));
+    expect(res.status).toBe(403);
+  });
+
+  for (const w of [500, 600, 700]) {
+    it(`serves barlow-condensed-${w}.woff2 as woff2`, async () => {
+      const res = await authed(`/fonts/barlow-condensed-${w}.woff2`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("font/woff2");
+      expect(res.headers.get("X-Ember-Shell")).toBe("1");
+      const sig = new TextDecoder().decode(new Uint8Array(await res.arrayBuffer()).slice(0, 4));
+      expect(sig).toBe("wOF2");
+    });
+  }
+
+  it("the shell no longer loads Google Fonts", async () => {
+    const html = await (await authed("/")).text();
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).not.toContain("fonts.gstatic.com");
+  });
+});
