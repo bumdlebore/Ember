@@ -506,3 +506,41 @@ describe("self-hosted fonts", () => {
     expect(html).not.toContain("fonts.gstatic.com");
   });
 });
+
+describe("catalog route", () => {
+  const url = "https://ember.austinsego.com/api/catalog";
+  const get = async (q = "", method = "GET") =>
+    callWorker(new Request(url + q, { method, headers: { "Cf-Access-Jwt-Assertion": await mintJwt() } }));
+  beforeEach(async () => {
+    await env.DB.exec("DROP TABLE IF EXISTS catalog");
+    await env.DB.exec("DROP TABLE IF EXISTS catalog_meta");
+  });
+
+  it("refuses without an assertion", async () => {
+    const res = await SELF.fetch(url);
+    expect(res.status).toBe(403);
+  });
+
+  it("returns an empty catalog when the tables don't exist", async () => {
+    const res = await get();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ version: null, blends: [] });
+  });
+
+  it("returns blends with a version, and unchanged when v matches", async () => {
+    await env.DB.exec("CREATE TABLE catalog (k TEXT PRIMARY KEY, data TEXT NOT NULL)");
+    await env.DB.exec("CREATE TABLE catalog_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)");
+    const blend = { k: "oliva|serie v melanio", b: "Oliva", l: "Serie V Melanio", sizes: [] };
+    await env.DB.prepare("INSERT INTO catalog (k, data) VALUES (?, ?)").bind(blend.k, JSON.stringify(blend)).run();
+    await env.DB.prepare("INSERT INTO catalog_meta (key, value) VALUES ('version', ?)").bind("2026-09-26T03:00:00Z").run();
+    const res = await get();
+    expect(res.headers.get("Cache-Control")).toMatch(/no-store/);
+    expect(await res.json()).toEqual({ version: "2026-09-26T03:00:00Z", blends: [blend] });
+    expect(await (await get("?v=2026-09-26T03:00:00Z")).json()).toEqual({ version: "2026-09-26T03:00:00Z", unchanged: true });
+  });
+
+  it("rejects other methods", async () => {
+    const res = await get("", "POST");
+    expect(res.status).toBe(405);
+  });
+});
