@@ -16,7 +16,7 @@
   const n0 = data.length; $("#save").click();
   const e = data.find(x=>x.id==="u-new");
   r.editKeepsId = data.length===n0 && e.r===4.25 && e.n==="Edited note" && e.u>now-5000;
-  r.exitEdit = editingId===null && $("#save").textContent==="Save" && $("#cancel").hidden;
+  r.exitEdit = editingId===null && $("#save").textContent==="Save to log" && $("#cancel").hidden;
   r.stripEmptied = $("#unrated").children.length===0;
   openDetail("u-new"); document.querySelector("#againbtn").click();
   r.againPrefill = $("#f-label").value==="Encore Black" && $("#f-brand").value==="EP Carrillo"

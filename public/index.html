@@ -301,75 +301,73 @@
   <!-- ===== LOG ===== -->
   <section class="panel on" id="log" role="tabpanel">
     <div class="unrated" id="unrated"></div>
-    <div class="card pad">
-      <div class="fgrid">
-        <div class="edithd" id="edithd" hidden></div>
-        <div class="field">
-          <div class="namebox">
-            <input id="f-label" placeholder="What are you smoking?" autocomplete="off"
-              autocapitalize="words" enterkeyhint="done" aria-label="Cigar name">
-            <div class="sugg" id="sugg" role="listbox" hidden></div>
-          </div>
-          <div class="summary" id="summary" hidden><span id="summarytext"></span>
-            <button type="button" class="linkbtn" id="showdetails">Edit details</button></div>
-        </div>
-
-        <div class="again" id="again"></div>
-
-        <div class="field">
-          <div class="fl rowlbl"><span>Rating</span>
-            <button type="button" class="linkbtn" id="ratelow">Lower scores</button></div>
-          <div class="ratechips" id="ratechips"></div>
-          <div class="ratechips low" id="ratechips-low" hidden></div>
-        </div>
-
-        <textarea id="f-notes" rows="2" placeholder="Flavors, draw, burn…" aria-label="Notes"></textarea>
-
-        <div class="footrow">
-          <label class="toggle"><input type="checkbox" id="f-social"> With friends</label>
-          <label class="datebtn"><span id="datelabel"></span>
-            <input id="f-date" type="date" aria-label="Date"></label>
-        </div>
-
-        <details id="details">
-          <summary>Details</summary>
-          <div class="fgrid">
-            <div class="fgrid c2">
-              <div class="field"><label class="fl" for="f-brand">Brand</label>
-                <input id="f-brand" list="dl-brand" placeholder="Oliva" autocomplete="off"></div>
-              <div class="field"><label class="fl" for="f-origin">Origin</label>
-                <input id="f-origin" list="dl-origin" placeholder="Nicaragua" autocomplete="off"></div>
-            </div>
-            <div class="fgrid c2">
-              <div class="field"><label class="fl" for="f-wrapper">Wrapper</label>
-                <input id="f-wrapper" list="dl-wrapper" placeholder="San Andres" autocomplete="off"></div>
-              <div class="field"><label class="fl" for="f-wnote">Wrapper note</label>
-                <input id="f-wnote" list="dl-wnote" placeholder="Maduro" autocomplete="off"></div>
-            </div>
-            <div class="fgrid c2">
-              <div class="field"><label class="fl" for="f-binder">Binder</label>
-                <input id="f-binder" list="dl-binder" placeholder="Nicaraguan" autocomplete="off"></div>
-              <div class="field"><label class="fl" for="f-shape">Shape</label>
-                <input id="f-shape" list="dl-shape" placeholder="Toro" autocomplete="off"></div>
-            </div>
-            <div class="fgrid c2">
-              <div class="field"><label class="fl" for="f-body">Body</label>
-                <select id="f-body"><option value="">—</option><option>Light</option><option>Med-Light</option>
-                  <option>Med</option><option>Med-Full</option><option>Full</option></select></div>
-              <div class="field"><label class="fl" for="f-filler">Filler</label>
-                <input id="f-filler" placeholder="Nicaraguan, Dominican" autocomplete="off"></div>
-            </div>
-          </div>
-        </details>
-
-        <div class="btnrow">
-          <button class="btn primary" id="save">Save</button>
-          <button class="btn ghost" id="cancel" hidden>Cancel</button>
+    <div class="fgrid">
+      <div class="edithd" id="edithd" hidden></div>
+      <div class="field">
+        <label class="lab" for="f-label">Cigar</label>
+        <div class="namebox">
+          <input id="f-label" placeholder="What are you smoking?" autocomplete="off"
+            autocapitalize="words" enterkeyhint="done">
+          <div class="sugg" id="sugg" role="listbox" hidden></div>
         </div>
       </div>
+      <div class="fgrid c2">
+        <div class="cell" id="cell-brand"><div class="lab">Brand</div><div class="v" id="c-brand"></div></div>
+        <div class="cell" id="cell-wrapper"><div class="lab">Wrapper</div><div class="v" id="c-wrapper"></div></div>
+      </div>
+      <div class="again" id="again"></div>
+      <div class="field">
+        <div class="lab rowlbl"><span>Score</span>
+          <button type="button" class="linkbtn" id="ratelow" aria-expanded="false">Lower scores</button></div>
+        <div class="ratechips" id="ratechips" role="group" aria-label="Score"></div>
+        <div class="ratechips low" id="ratechips-low" role="group" aria-label="Lower scores" hidden></div>
+      </div>
+      <div class="field" id="optrows"></div>
+      <div class="field"><label class="lab" for="f-notes">Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Anything the boxes missed"></textarea></div>
+      <div class="footrow">
+        <label class="toggle"><input type="checkbox" class="box" id="f-social"> With friends</label>
+        <label class="datebtn"><span id="datelabel"></span>
+          <input id="f-date" type="date" aria-label="Date"></label>
+      </div>
+      <details id="details">
+        <summary>Details</summary>
+        <div class="fgrid">
+          <div class="fgrid c2">
+            <div class="field"><label class="lab" for="f-brand">Brand</label>
+              <input id="f-brand" list="dl-brand" placeholder="Oliva" autocomplete="off"></div>
+            <div class="field"><label class="lab" for="f-origin">Origin</label>
+              <input id="f-origin" list="dl-origin" placeholder="Nicaragua" autocomplete="off"></div>
+          </div>
+          <div class="fgrid c2">
+            <div class="field"><label class="lab" for="f-wrapper">Wrapper</label>
+              <input id="f-wrapper" list="dl-wrapper" placeholder="San Andres" autocomplete="off"></div>
+            <div class="field"><label class="lab" for="f-wnote">Wrapper note</label>
+              <input id="f-wnote" list="dl-wnote" placeholder="Maduro" autocomplete="off"></div>
+          </div>
+          <div class="fgrid c2">
+            <div class="field"><label class="lab" for="f-binder">Binder</label>
+              <input id="f-binder" list="dl-binder" placeholder="Nicaraguan" autocomplete="off"></div>
+            <div class="field"><label class="lab" for="f-shape">Shape</label>
+              <input id="f-shape" list="dl-shape" placeholder="Toro" autocomplete="off"></div>
+          </div>
+          <div class="fgrid c2">
+            <div class="field"><label class="lab" for="f-body">Body</label>
+              <select id="f-body"><option value="">—</option><option>Light</option><option>Med-Light</option>
+                <option>Med</option><option>Med-Full</option><option>Full</option></select></div>
+            <div class="field"><label class="lab" for="f-filler">Filler</label>
+              <input id="f-filler" placeholder="Nicaraguan, Dominican" autocomplete="off"></div>
+          </div>
+        </div>
+      </details>
     </div>
   </section>
 </div>
+
+<div class="savebar" id="savebar"><div class="in">
+  <button class="btn primary" id="save">Save to log</button>
+  <button class="btn" id="cancel" hidden>Cancel</button>
+</div></div>
 
 <!-- datalists -->
 <datalist id="dl-brand"></datalist>
@@ -700,15 +698,16 @@ $("#backfill").onclick=()=>{
 const RATE_MAIN=[3.5,3.75,4,4.25,4.5,4.75,5], RATE_LOW=[2,2.25,2.5,2.75,3,3.25];
 let rating=null;
 function buildRating(){
-  const mk=v=>`<button type="button" class="rchip" data-r="${v}">${v}</button>`;
+  const mk=v=>`<button type="button" class="rchip" data-r="${v}" aria-pressed="false"><span>${v}</span>${RING}</button>`;
   $("#ratechips").innerHTML=RATE_MAIN.map(mk).join("");
   $("#ratechips-low").innerHTML=RATE_LOW.map(mk).join("");
   $$(".rchip").forEach(b=>b.onclick=()=>{const v=+b.dataset.r;setRating(rating===v?null:v);});
-  $("#ratelow").onclick=()=>{$("#ratechips-low").hidden=!$("#ratechips-low").hidden;};
+  $("#ratelow").onclick=()=>{const low=$("#ratechips-low");low.hidden=!low.hidden;
+    $("#ratelow").setAttribute("aria-expanded",String(!low.hidden));};
 }
 function setRating(v){rating=v;
-  $$(".rchip").forEach(b=>b.classList.toggle("on",+b.dataset.r===rating));
-  if(rating!=null&&rating<3.5)$("#ratechips-low").hidden=false;}
+  $$(".rchip").forEach(b=>{const on=+b.dataset.r===rating;b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});
+  if(rating!=null&&rating<3.5){$("#ratechips-low").hidden=false;$("#ratelow").setAttribute("aria-expanded","true");}}
 
 /* history + catalog suggestions */
 function historyCigars(){
@@ -783,24 +782,35 @@ function tryPrefill(){
   renderSummary();
 }
 function renderSummary(){
-  const parts=[$("#f-brand").value,[$("#f-wrapper").value,$("#f-wnote").value].filter(Boolean).join(" "),
-    $("#f-binder").value,$("#f-body").value].map(s=>s.trim()).filter(Boolean);
-  $("#summarytext").textContent=parts.join(" · ");$("#summary").hidden=!parts.length;
+  $("#c-brand").textContent=$("#f-brand").value.trim();
+  $("#c-wrapper").textContent=[$("#f-wrapper").value,$("#f-wnote").value].map(s=>s.trim()).filter(Boolean).join(" ");
 }
+["#cell-brand","#cell-wrapper"].forEach(s=>$(s).onclick=()=>{$("#details").open=true;
+  $("#details").scrollIntoView({behavior:"smooth",block:"start"});});
 $("#details").addEventListener("input",renderSummary);
 $("#details").addEventListener("change",renderSummary);
-$("#showdetails").onclick=()=>{$("#details").open=true;
-  $("#details").scrollIntoView({behavior:"smooth",block:"start"});};
 
 /* smoke-again chips: cigars logged more than once */
 function renderAgain(){
   const box=$("#again");
   if($("#f-label").value.trim()||editingId){box.innerHTML="";return;}
   const reps=historyCigars().filter(h=>h.count>1).slice(0,6);
-  box.innerHTML=reps.length?`<div class="fl">Smoke again</div><div class="chips">${
+  box.innerHTML=reps.length?`<div class="lab">Smoke again</div><div class="chips">${
     reps.map((h,i)=>`<button type="button" class="chip againchip" data-i="${i}">${esc(h.e.l||h.e.b)}</button>`).join("")}</div>`:"";
   box.querySelectorAll(".againchip").forEach(b=>b.onclick=()=>applyPick(reps[+b.dataset.i].e,"history"));
 }
+
+/* draw, burn, would-smoke-again: tap to underline, tap again to clear */
+let opt={dr:"",bu:"",ag:""};
+function buildOpts(){
+  $("#optrows").innerHTML=Object.entries(OPTS).map(([k,o])=>`<div class="opts" role="group" aria-label="${o.label}">
+    <span class="lab">${o.label}</span>${o.vals.map(([v,t])=>
+      `<button type="button" data-k="${k}" data-v="${v}" aria-pressed="false">${t}</button>`).join("")}</div>`).join("");
+  $$("#optrows button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;setOpt(k,opt[k]===b.dataset.v?"":b.dataset.v);});
+}
+function setOpt(k,v){opt[k]=v;
+  $$(`#optrows button[data-k="${k}"]`).forEach(b=>{const on=b.dataset.v===v;
+    b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});}
 
 /* dates */
 function fmtShort(d){if(!d)return"";const[y,m,da]=d.split("-");
@@ -815,7 +825,7 @@ let editingId=null;
 function setEditMode(id,title){
   editingId=id;
   $("#edithd").hidden=!id;$("#edithd").textContent=id?"Editing "+title:"";
-  $("#save").textContent=id?"Save changes":"Save";$("#cancel").hidden=!id;
+  $("#save").textContent=id?"Save changes":"Save to log";$("#cancel").hidden=!id;
 }
 function startEdit(id){
   const e=data.find(x=>x.id===id);if(!e)return;
@@ -823,6 +833,7 @@ function startEdit(id){
   $("#f-label").value=e.l||"";$("#f-brand").value=e.b||"";setLeaf(e);
   $("#f-notes").value=e.n||"";$("#f-social").checked=!!e.s;
   setRating(typeof e.r==="number"?e.r:null);
+  Object.keys(OPTS).forEach(k=>setOpt(k,e[k]||""));
   $("#f-date").value=e.d||localToday();$("#datelabel").textContent=dateLabel($("#f-date").value);
   pickedLabel=null;setEditMode(id,e.l||e.b);
   $("#details").open=true;renderSummary();renderAgain();renderUnrated();
@@ -847,7 +858,7 @@ $("#cancel").onclick=()=>{clearForm();renderUnrated();};
 function clearForm(){
   ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
     .forEach(id=>$("#"+id).value="");
-  $("#f-body").value="";$("#f-social").checked=false;setRating(null);$("#ratechips-low").hidden=true;
+  $("#f-body").value="";$("#f-social").checked=false;setRating(null);Object.keys(OPTS).forEach(k=>setOpt(k,""));$("#ratechips-low").hidden=true;
   formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);
   $("#details").open=false;setEditMode(null);pickedLabel=null;hideSugg();renderSummary();renderAgain();
 }
@@ -857,7 +868,7 @@ function formFields(){
     sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
     w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),bn:$("#f-binder").value.trim(),
     fi:$("#f-filler").value.split(",").map(x=>x.trim()).filter(Boolean),
-    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,n:$("#f-notes").value.trim()};
+    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,n:$("#f-notes").value.trim(),dr:opt.dr,bu:opt.bu,ag:opt.ag};
 }
 $("#save").onclick=()=>{
   const f=formFields();
@@ -896,6 +907,7 @@ $("#impfile").onchange=ev=>{const f=ev.target.files[0];if(!f)return;
 function switchTab(name){
   $$(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===name));
   $$(".panel").forEach(p=>p.classList.toggle("on",p.id===name));
+  $("#savebar").hidden=name!=="log";
   window.scrollTo({top:0,behavior:"smooth"});
 }
 $$(".tabs button").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
@@ -998,14 +1010,14 @@ window.addEventListener("online",()=>syncNow(true));
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden)return;
   /* a standalone app can stay open overnight; move an untouched date to today */
-  const untouched=!editingId&&!$("#f-label").value.trim()&&!$("#f-notes").value.trim()&&rating===null;
+  const untouched=!editingId&&!$("#f-label").value.trim()&&!$("#f-notes").value.trim()&&rating===null&&!opt.dr&&!opt.bu&&!opt.ag;
   if(untouched&&$("#f-date").value===formDay&&formDay!==localToday()){
     formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);}
   syncNow(true);
 });
 
 /* ============ BOOT ============ */
-buildRating();fillDatalists();clearForm();renderAll();
+buildRating();buildOpts();fillDatalists();clearForm();renderAll();
 updateSyncUI();syncNow(true);
 
 if("serviceWorker" in navigator)
