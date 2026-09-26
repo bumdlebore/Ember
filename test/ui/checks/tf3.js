@@ -38,5 +38,16 @@
   r.searchTags = [...document.querySelectorAll("#list .entry .nm")].some((n) => n.textContent === "Tag Test");
   $("#q").value = ""; renderJournal();
   r.journalShowsTags = document.querySelector(`#list .entry[data-id="${saved.id}"] .etags`)?.textContent === "chocolate, black pepper, clove";
+  // Review fix: the tapped box must stay under the finger when the Tasted line wraps.
+  clearForm(); fam(5).click();
+  ["black pepper", "white pepper", "cinnamon", "clove"].forEach(tick);
+  window.scrollTo(0, 300);
+  const box = () => document.querySelector('.famtags input[data-t="nutmeg"]');
+  const h0 = $("#tasted").offsetHeight, top0 = box().getBoundingClientRect().top;
+  tick("nutmeg");
+  r.wrapHappened = $("#tasted").offsetHeight > h0 + 10;
+  r.boxStaysOnWrap = Math.abs(box().getBoundingClientRect().top - top0) < 2;
+  r.focusKept = document.activeElement === box();
+  clearForm();
   return r;
 })()

@@ -36,5 +36,19 @@
   let csv = ""; const orig = window.dl; window.dl = (n, text) => { csv = text; };
   $("#exp-csv").click(); window.dl = orig;
   r.csvColumns = csv.split("\n")[0].endsWith(",Flavors,Draw,Burn,Again") && csv.includes('"cedar","tight","even","yes"');
+  // Review fix: notes that name a flavor without tasting it don't count.
+  const has = (n, t) => hits({ n }).tags.has(t);
+  r.negatedNotesSkip = !has("Not really my cup of tea", "tea") && !has("pairs well with coffee", "coffee") &&
+    !has("no real bitterness", "bitter") && !has("no bitterness", "bitter") && !has("creamier than the last", "cream");
+  r.plainNotesHit = has("black tea, bitter coffee, sweet cream", "tea") && has("black tea, bitter coffee, sweet cream", "coffee") &&
+    has("black tea, bitter coffee, sweet cream", "bitter") && has("black tea, bitter coffee, sweet cream", "cream");
+  r.noPhantomFloral = !flavorStats(data.filter((e) => /^seed/.test(e.id) && !e.deleted)).some((x) => x.F.f === "Floral and herbal");
+  // Review fix: a later verdict on the same cigar replaces an earlier "yes".
+  data = [["Flip", "2024-01-01", "yes"], ["Flip", "2024-06-01", "no"], ["Flop", "2024-01-01", "no"], ["Flop", "2024-06-01", "yes"],
+    ["Keep", "2024-01-01", "yes"], ["Keep", "2024-06-01", ""]].map(([l, d, ag], i) =>
+    ({ id: "ba" + i, u: now, deleted: 0, d, b: "BA", l, r: 4, ag, fi: [] })).concat(data);
+  renderAll();
+  const ba = [...document.querySelectorAll("#buyagain .entry .nm")].map((n) => n.textContent);
+  r.laterNoDrops = !ba.includes("Flip") && ba.includes("Flop") && ba.includes("Keep");
   return r;
 })()

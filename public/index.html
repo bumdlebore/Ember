@@ -529,9 +529,11 @@ function renderTally(list){
 }
 function renderBuyAgain(list){
   const seen=new Map();
-  [...list].sort((a,b)=>(b.d||"").localeCompare(a.d||"")).forEach(e=>{if(e.ag!=="yes")return;
+  /* the latest smoke with a verdict decides, so a later "no" drops an earlier "yes" */
+  [...list].sort((a,b)=>(b.d||"").localeCompare(a.d||"")).forEach(e=>{if(!e.ag)return;
     const k=((e.b||"")+"|"+(e.l||"")).toLowerCase();if(!seen.has(k))seen.set(k,e);});
-  $("#buyagain").innerHTML=seen.size?[...seen.values()].map(e=>entryRow(e)).join("")
+  const yes=[...seen.values()].filter(e=>e.ag==="yes");
+  $("#buyagain").innerHTML=yes.length?yes.map(e=>entryRow(e)).join("")
     :`<p class="note">Mark "yes" under Again and they collect here.</p>`;
 }
 function renderDrawBurn(list){
@@ -806,15 +808,15 @@ function renderAgain(){
    Cigar Snob) and Wu et al. 2024 (CC BY). Family-level `re` catches vague words. */
 const WHEEL=[
  {f:"Sweet",re:/sweet/i,tags:[["sweet",/sweet|sugar/i],["caramel",/caramel/i],["honey",/honey/i],["molasses",/molasses/i],["vanilla",/vanilla/i]]},
- {f:"Cocoa and coffee",re:null,tags:[["chocolate",/chocolat|s'?more/i],["cocoa",/cocoa/i],["coffee",/coffee/i],["espresso",/espresso/i]]},
- {f:"Nut and cream",re:null,tags:[["nutty",/\bnut(ty|s)?\b/i],["almond",/almond/i],["peanut",/peanut/i],["cream",/\bcream(?!y)/i]]},
+ {f:"Cocoa and coffee",re:null,tags:[["chocolate",/chocolat|s'?more/i],["cocoa",/cocoa/i],["coffee",/(?<!with )coffee/i],["espresso",/espresso/i]]},
+ {f:"Nut and cream",re:null,tags:[["nutty",/\bnut(ty|s)?\b/i],["almond",/almond/i],["peanut",/peanut/i],["cream",/\bcream(?!y|ier)/i]]},
  {f:"Bread and toast",re:null,tags:[["cracker",/cracker/i],["graham",/graham/i],["toast",/toast/i],["bread",/bread/i]]},
  {f:"Wood",re:null,tags:[["cedar",/cedar/i],["oak",/\boak/i],["woody",/wood/i],["charred",/\bchar\b|charred|barrel/i]]},
  {f:"Spice",re:/spice|spicy/i,tags:[["black pepper",/black pepper|pepper/i],["white pepper",/white pepper/i],["cinnamon",/cinnamon/i],["clove",/clove/i],["nutmeg",/nutmeg/i],["anise",/anise|licorice/i]]},
  {f:"Earth and leather",re:null,tags:[["earth",/earth/i],["leather",/leather/i],["meaty",/meaty|\bmeat\b/i],["funk",/funk/i],["mineral",/mineral|graphite/i]]},
  {f:"Fruit",re:/fruit|\bfig\b|\bplum\b/i,tags:[["raisin",/raisin/i],["cherry",/cherry/i],["citrus",/citrus|orange|\blime|lemon/i],["apricot",/apricot/i]]},
- {f:"Floral and herbal",re:null,tags:[["floral",/floral|flower/i],["hay",/\bhay\b/i],["grass",/grass/i],["tea",/\btea\b/i],["herbal",/herb/i]]},
- {f:"Feel",re:null,tags:[["smooth",/smooth/i],["creamy",/creamy/i],["harsh",/harsh/i],["bitter",/bitter/i],["acidic",/acid/i],["dry",/\bdry\b/i]]}
+ {f:"Floral and herbal",re:null,tags:[["floral",/floral|flower/i],["hay",/\bhay\b/i],["grass",/grass/i],["tea",/(?<!cup of )\btea\b/i],["herbal",/herb/i]]},
+ {f:"Feel",re:null,tags:[["smooth",/smooth/i],["creamy",/creamy/i],["harsh",/harsh/i],["bitter",/(?<!\bno (real )?)bitter/i],["acidic",/acid/i],["dry",/\bdry\b/i]]}
 ];
 const TAG_ORDER=WHEEL.flatMap(F=>F.tags.map(([t])=>t));
 let tags=new Set(), openFam=null;
@@ -836,8 +838,12 @@ function renderWheel(){
 }
 $("#fams").addEventListener("click",e=>{const b=e.target.closest(".fam");if(!b)return;
   const i=+b.dataset.i;openFam=openFam===i?null:i;renderWheel();});
+/* the Tasted line can wrap and push the panel down; keep the tapped box under the finger */
 $("#fams").addEventListener("change",e=>{const c=e.target.closest("input[data-t]");if(!c)return;
-  if(c.checked)tags.add(c.dataset.t);else tags.delete(c.dataset.t);renderWheel();});
+  const t=c.dataset.t, top=c.getBoundingClientRect().top;
+  if(c.checked)tags.add(t);else tags.delete(t);renderWheel();
+  const n=$(`#fams input[data-t="${CSS.escape(t)}"]`);
+  if(n){window.scrollBy(0,n.getBoundingClientRect().top-top);n.focus({preventScroll:true});}});
 $("#tasted").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b)return;
   tags.delete(b.dataset.t);renderWheel();});
 
