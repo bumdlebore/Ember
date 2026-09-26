@@ -1,5 +1,29 @@
 # Ember private catalog Implementation Plan
 
+## Handoff — 2026-09-26 (Claude Code desktop on MacBook → claude01, Opus 5.5)
+
+- [ ] Resume: build the private catalog from this plan on claude01. Tick this in Task 5 Step 6.
+
+**Goal:** Execute Tasks 1–5 below on branch `catalog`.
+
+**Decisions made:** see the spec (`docs/superpowers/specs/2026-09-25-ember-catalog-design.md`). Austin approved the spec, the plan, native execution on claude01, a one-time private crawl of Neptune Cigar (he accepted the terms risk), one entry per blend with its sizes, and D1 storage. Ember's only canonical record is this repo, so don't write Ember notes into Homelab files. Any older claude01 Ember session is stale and can be ignored: PR #2 was merged 2026-09-26 03:26Z.
+
+**Current state**
+- verified 2026-09-26: `main` at `7ee726f` includes the tasting form (PR #2), deployed as `2268035c`. The `catalog` branch holds only the spec and plan.
+- verified 2026-09-25: Neptune's `robots.txt` allows all paths. `sitemap.xml` lists 6,544 `/cigars/` pages. A size page carries a `BreadcrumbList` (Brand, Blend) and the spec labels listed in the spec. Famous Smoke serves a bot challenge and is out.
+- verified 2026-09-26 on claude01: `~/Projects/ember` is clean on `main`. Node 24, gh, and the UI runner all work.
+- assumed: undici's `fetch` decompresses gzip itself, and the null rate on real pages stays under 30%. Task 3 Steps 3–4 check both.
+
+**Next 3 actions**
+1. `cd ~/Projects/ember && git fetch && git checkout catalog && git pull && npm ci`
+2. Tasks 1 and 2, then Task 3: after the smoke and sample checks pass, start the full crawl in the background and record its start time here.
+3. Task 4 while the crawl runs. Then Task 5 Steps 1–2 after it finishes. Stop at Step 3 and hand the Mac steps to Austin.
+
+**Open questions:** none.
+
+**Credentials needed:** GitHub via `gh` on claude01 (set up). Cloudflare wrangler lives on the Mac only, so the schema, load, and deploy steps are Austin's Mac steps.
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the inline 1,238-cigar catalog with a private, per-blend catalog crawled once from Neptune Cigar, stored in D1, served behind Access, and cached on the phone.
