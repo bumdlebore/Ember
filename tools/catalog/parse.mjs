@@ -6,7 +6,7 @@ const lines = (html) =>
   decode(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, "\n"))
     .split("\n").map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean);
 
-const LABELS = { "Cigar Shape": "shape", "Cigar Length": "len", Origin: "o", "Cigar Ring Gauge": "rg",
+export const LABELS = { "Cigar Shape": "shape", "Cigar Length": "len", Origin: "o", "Cigar Ring Gauge": "rg",
   Strength: "strength", "Wrapper Color": "color", "Cigar Manufacturer": "mk",
   "Cigar Wrapper": "w", "Cigar Binder": "bn", "Cigar Filler": "fi" };
 

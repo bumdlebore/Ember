@@ -46,6 +46,19 @@
   const realSet = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error("QuotaExceededError"); };
   CAT = []; catVersion = null; await refreshCatalog(true); Storage.prototype.setItem = realSet;
   r.quotaSafe = CAT.length === 3;
+  // Review fix: an exact blend name only matches a row of the same (or no) brand.
+  const mp = [{ b: "Arturo Fuente", l: "Maduro", w: "Broadleaf" }, { b: "La Gloria Cubana", l: "Maduro", w: "Ecuadorian" }, { b: "", l: "Maduro Legacy", w: "Legacy" }];
+  r.matchHonorsBrand = findMatch("Maduro", "La Gloria Cubana", mp)?.w === "Ecuadorian" &&
+    findMatch("Maduro", "Excalibur", mp.slice(0, 1)) === null && findMatch("Maduro", "", mp)?.w === "Broadleaf";
+  // Review fix: a size whose wrapper or body differs from its blend applies them; tapping it off restores the blend's.
+  type("reserva robusto"); sg(/Reserva Robusto Line/).click();
+  const churchill = [...document.querySelectorAll("#sizeopts button")].find((b) => /Churchill/.test(b.textContent));
+  $("#f-binder").value = "Hand";
+  churchill.click();
+  r.sizeOverridesLeaf = $("#f-wrapper").value === "Connecticut" && $("#f-body").value === "Med" && $("#f-wnote").value === "Maduro" && $("#f-binder").value === "Hand";
+  [...document.querySelectorAll("#sizeopts button")].find((b) => /Churchill/.test(b.textContent)).click();
+  r.sizeRestoresLeaf = $("#f-wrapper").value === "San Andres" && $("#f-body").value === "Med-Full" && $("#f-shape").value === "";
+  clearForm();
   let csv = ""; const realDl = window.dl; window.dl = (n, t) => { csv = t; }; $("#exp-csv").click(); window.dl = realDl;
   r.csvSize = csv.split("\n")[0].endsWith(",Size");
   return r;

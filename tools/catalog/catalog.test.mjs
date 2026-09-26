@@ -88,6 +88,31 @@ describe("buildCatalog", () => {
     expect(blends[1]).toMatchObject({ b: "", src: "ci", sizes: [] });
     expect(stats).toMatchObject({ neptune: 1, legacy: 1 });
   });
+  it("takes each blend field from the most common value across its sizes, filling blanks", () => {
+    const { blends } = buildCatalog([
+      page({ n: "A", shape: "Robusto", len: "5", rg: 50 }, { w: "Cameroon", strength: "", mk: "" }),
+      page({ n: "B", shape: "Toro", len: "6", rg: 52 }, { w: "Connecticut Shade" }),
+      page({ n: "C", shape: "Churchill", len: "7", rg: 48 }, { w: "Connecticut Shade" }),
+    ], []);
+    expect(blends[0]).toMatchObject({ w: "Connecticut Shade", bd: "Med", mk: "Oliva Cigar Co." });
+  });
+  it("keeps a size's wrapper and body only where they differ from the blend", () => {
+    const { blends } = buildCatalog([
+      page({ n: "A", shape: "Robusto", len: "5", rg: 50 }, { w: "Cameroon", color: "Maduro", strength: "Full" }),
+      page({ n: "B", shape: "Toro", len: "6", rg: 52 }, { w: "Connecticut Shade" }),
+      page({ n: "C", shape: "Churchill", len: "7", rg: 48 }, { w: "Connecticut Shade" }),
+    ], []);
+    expect(blends[0].sizes).toEqual([
+      { n: "A", shape: "Robusto", len: "5", rg: 50, w: "Cameroon", wn: "Maduro", bd: "Full" },
+      { n: "B", shape: "Toro", len: "6", rg: 52 },
+      { n: "C", shape: "Churchill", len: "7", rg: 48 },
+    ]);
+  });
+  it("drops values that are prose-length or a spec label, so no page text reaches the catalog", () => {
+    const { blends } = buildCatalog([page({ n: "T", shape: "T", len: "6", rg: 52 },
+      { bn: "The binder is the leaf that holds the filler together under the wrapper leaf", o: "Cigar Filler", fi: ["Nicaragua", "Cigar Binder"] })], []);
+    expect(blends[0]).toMatchObject({ bn: "", o: "", fi: ["Nicaragua"] });
+  });
   it("skips null pages and reports unmapped strengths", () => {
     const { blends, stats } = buildCatalog([null, page({ n: "T", shape: "T", len: "6", rg: 52 }, { strength: "Spicy" })], []);
     expect(blends).toHaveLength(1);

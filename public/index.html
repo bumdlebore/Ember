@@ -703,6 +703,8 @@ function findMatch(label,brand,pool){
   const v=(label||"").trim().toLowerCase();if(v.length<3)return null;
   const br=(brand||"").trim().toLowerCase();
   pool=pool||[...live(),...CAT];                      // your logs first, then catalog
+  /* catalog names no longer carry the brand, so "Maduro" exists under many brands: skip rows of another brand */
+  if(br){const nb=norm(br);pool=pool.filter(e=>{const x=norm(e.b);return !x||x===nb||x.includes(nb)||nb.includes(x);});}
   let m=pool.find(e=>(e.l||"").toLowerCase()===v);    // exact full-name
   if(m)return m;
   let cands=pool.filter(e=>(e.l||"").toLowerCase().includes(v));
@@ -784,10 +786,10 @@ function setLeaf(src){
 }
 function clearLeaf(){setLeaf({});$("#f-brand").value="";$("#f-size").value="";renderSizes([]);}
 /* size row: a picked catalog blend's sizes; tapping one fills Shape and Size */
-let sizeList=[], sizeAll=false, pickedSize=null;
+let sizeList=[], sizeAll=false, pickedSize=null, pickedBlend=null;
 const sizeText=s=>[s.len,s.rg].filter(Boolean).join(" × ");
 function renderSizes(list){
-  if(list!==undefined){sizeList=list||[];sizeAll=false;pickedSize=null;}
+  if(list!==undefined){sizeList=list||[];sizeAll=false;pickedSize=null;if(!sizeList.length)pickedBlend=null;}
   $("#sizes").hidden=!sizeList.length;
   const shown=sizeAll?sizeList:sizeList.slice(0,8);
   $("#moresizes").hidden=sizeAll||sizeList.length<=8;
@@ -795,9 +797,12 @@ function renderSizes(list){
     esc(s.n)}${sizeText(s)?" "+esc(sizeText(s)):""}</button>`).join("");
 }
 $("#sizeopts").addEventListener("click",e=>{const b=e.target.closest("button[data-i]");if(!b)return;
-  const s=sizeList[+b.dataset.i];
+  const s=sizeList[+b.dataset.i], prev=pickedSize;
   if(pickedSize===s){pickedSize=null;$("#f-shape").value="";$("#f-size").value="";}
   else{pickedSize=s;$("#f-shape").value=s.shape||s.n;$("#f-size").value=sizeText(s);}
+  /* a size can differ from its blend in wrapper, note or body; apply its own, and put the blend's back when it's untapped */
+  ["w","wn","bd"].forEach(k=>{if(!(prev&&k in prev)&&!(pickedSize&&k in pickedSize))return;
+    $(LEAF_IDS[k]).value=cleanLeaf(pickedSize&&k in pickedSize?pickedSize[k]:(pickedBlend||{})[k]);});
   renderSizes();renderSummary();});
 $("#moresizes").onclick=()=>{sizeAll=true;renderSizes();};
 let pickedLabel=null, sugList=[];
@@ -807,7 +812,7 @@ function applyPick(src,kind){
   $("#f-label").value=l;$("#f-brand").value=b;setLeaf(src);
   /* catalog rows carry a sizes array; history entries carry their chosen size string */
   $("#f-size").value=typeof src.sz==="string"?src.sz:"";
-  renderSizes(kind==="catalog"?(src.sizes||[]):[]);
+  pickedBlend=kind==="catalog"?src:null;renderSizes(kind==="catalog"?(src.sizes||[]):[]);
   pickedLabel=l;hideSugg();renderSummary();renderAgain();
 }
 function renderSugg(){
