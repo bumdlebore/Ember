@@ -35,7 +35,7 @@
   r.noOldCards = !document.querySelector("#palate .card") && !document.querySelector("#statstrip");
   let csv = ""; const orig = window.dl; window.dl = (n, text) => { csv = text; };
   $("#exp-csv").click(); window.dl = orig;
-  r.csvColumns = csv.split("\n")[0].endsWith(",Flavors,Draw,Burn,Again") && csv.includes('"cedar","tight","even","yes"');
+  r.csvColumns = csv.split("\n")[0].endsWith(",Flavors,Draw,Burn,Again,Size") && csv.includes('"cedar","tight","even","yes"');
   // Review fix: notes that name a flavor without tasting it don't count.
   const has = (n, t) => hits({ n }).tags.has(t);
   r.negatedNotesSkip = !has("Not really my cup of tea", "tea") && !has("pairs well with coffee", "coffee") &&
