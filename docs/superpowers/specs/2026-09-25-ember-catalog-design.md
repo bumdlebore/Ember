@@ -64,7 +64,7 @@ once from `index.html` before it's removed), and writes `~/ember-data/catalog.js
     empty
   - body, mapped from `Strength`: Mild → Light, Mild-Medium → Med-Light, Medium → Med,
     Medium-Full → Med-Full, Full → Full
-- **Sizes:** name (the `<h1>` minus the brand and blend prefix and minus the size,
+- **Sizes** (`sizes`): name (the `<h1>` minus the brand and blend prefix and minus the size,
   e.g. "Torpedo"), shape, length (`6"1/2` → `6½`, and `¼`/`¾` the same way; other
   fractions stay as `6 5/8`), and ring gauge. Duplicates are removed and the list is
   sorted by length, then ring.
@@ -72,8 +72,9 @@ once from `index.html` before it's removed), and writes `~/ember-data/catalog.js
   Normalized means lowercase with non-alphanumerics removed, compared against both
   `brand + blend` and `blend` alone. Legacy rows have no sizes and no brand, so the client
   keeps today's brand split for them.
-- **Record shape (compact keys):** `{k, b, l, w, wn, bn, fi[], o, bd, mk, sz:[{n, len, rg}], src}`,
-  where `src` is `"np"` or `"ci"`.
+- **Record shape (compact keys):** `{k, b, l, w, wn, bn, fi[], o, bd, mk, sizes:[{n, shape, len, rg}], src}`.
+  `src` is `"np"` or `"ci"`. The key is `sizes`, not `sz`, so it can't be confused with the
+  entry field `sz`.
 - **Expected size:** about 1,500 to 2,000 blends, about 400 KB raw and about 80 KB gzipped.
   The build prints the real counts.
 
@@ -136,7 +137,8 @@ once from `index.html` before it's removed), and writes `~/ember-data/catalog.js
   - When the picked blend has sizes, a "Size" row of pen-text options appears under the
     Brand/Wrapper cells. There are at most 8, and "More sizes" shows the rest.
   - Tapping a size sets Shape (`sh`) to the size's shape and a new optional field
-    `sz` to `"6½ × 52"`. Tapping it again clears both.
+    `sz` to `"6½ × 52"`. Tapping it again clears both. A Details field, Size (`#f-size`),
+    holds `sz` and can be edited by hand.
   - The row hides when the blend has no sizes, and on clear or retype.
 - **Display of `sz`:** the detail sheet shows it on the Shape row ("Torpedo, 6½ × 52"),
   and the CSV gains a Size column.
