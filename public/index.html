@@ -322,6 +322,11 @@
         <div class="ratechips" id="ratechips" role="group" aria-label="Score"></div>
         <div class="ratechips low" id="ratechips-low" role="group" aria-label="Lower scores" hidden></div>
       </div>
+      <div class="field" id="wheel">
+        <div class="lab">Tasted</div>
+        <div class="tasted" id="tasted" aria-live="polite"></div>
+        <div class="fams" id="fams"></div>
+      </div>
       <div class="field" id="optrows"></div>
       <div class="field"><label class="lab" for="f-notes">Notes</label>
         <textarea id="f-notes" rows="2" placeholder="Anything the boxes missed"></textarea></div>
@@ -800,6 +805,46 @@ function renderAgain(){
   box.querySelectorAll(".againchip").forEach(b=>b.onclick=()=>applyPick(reps[+b.dataset.i].e,"history"));
 }
 
+/* Flavor wheel: 10 families, 47 tags. Each tag's regex also counts past notes.
+   An independent list; its coverage draws on published cigar wheels (Blind Man's Puff,
+   Cigar Snob) and Wu et al. 2024 (CC BY). Family-level `re` catches vague words. */
+const WHEEL=[
+ {f:"Sweet",re:/sweet/i,tags:[["sweet",/sweet|sugar/i],["caramel",/caramel/i],["honey",/honey/i],["molasses",/molasses/i],["vanilla",/vanilla/i]]},
+ {f:"Cocoa and coffee",re:null,tags:[["chocolate",/chocolat|s'?more/i],["cocoa",/cocoa/i],["coffee",/coffee/i],["espresso",/espresso/i]]},
+ {f:"Nut and cream",re:null,tags:[["nutty",/\bnut(ty|s)?\b/i],["almond",/almond/i],["peanut",/peanut/i],["cream",/\bcream(?!y)/i]]},
+ {f:"Bread and toast",re:null,tags:[["cracker",/cracker/i],["graham",/graham/i],["toast",/toast/i],["bread",/bread/i]]},
+ {f:"Wood",re:null,tags:[["cedar",/cedar/i],["oak",/\boak/i],["woody",/wood/i],["charred",/\bchar\b|charred|barrel/i]]},
+ {f:"Spice",re:/spice|spicy/i,tags:[["black pepper",/black pepper|pepper/i],["white pepper",/white pepper/i],["cinnamon",/cinnamon/i],["clove",/clove/i],["nutmeg",/nutmeg/i],["anise",/anise|licorice/i]]},
+ {f:"Earth and leather",re:null,tags:[["earth",/earth/i],["leather",/leather/i],["meaty",/meaty|\bmeat\b/i],["funk",/funk/i],["mineral",/mineral|graphite/i]]},
+ {f:"Fruit",re:/fruit|\bfig\b|\bplum\b/i,tags:[["raisin",/raisin/i],["cherry",/cherry/i],["citrus",/citrus|orange|\blime|lemon/i],["apricot",/apricot/i]]},
+ {f:"Floral and herbal",re:null,tags:[["floral",/floral|flower/i],["hay",/\bhay\b/i],["grass",/grass/i],["tea",/\btea\b/i],["herbal",/herb/i]]},
+ {f:"Feel",re:null,tags:[["smooth",/smooth/i],["creamy",/creamy/i],["harsh",/harsh/i],["bitter",/bitter/i],["acidic",/acid/i],["dry",/\bdry\b/i]]}
+];
+const TAG_ORDER=WHEEL.flatMap(F=>F.tags.map(([t])=>t));
+let tags=new Set(), openFam=null;
+function setTags(list){tags=new Set(list||[]);renderWheel();}
+function renderWheel(){
+  const fams=$("#fams");
+  fams.innerHTML=WHEEL.map((F,i)=>{const n=F.tags.filter(([t])=>tags.has(t)).length;
+    return `<button type="button" class="fam" data-i="${i}" aria-expanded="${openFam===i}">${esc(F.f)}${n?`<b>${n}</b>`:""}</button>`;}).join("");
+  if(openFam!==null){
+    const F=WHEEL[openFam], panel=document.createElement("div");
+    panel.className="famtags";panel.setAttribute("role","group");panel.setAttribute("aria-label",F.f);
+    panel.innerHTML=F.tags.map(([t])=>`<label class="tag"><input type="checkbox" class="box" data-t="${esc(t)}"${tags.has(t)?" checked":""}>${esc(t)}</label>`).join("");
+    /* open the panel under the row holding the family: the grid has 2 columns */
+    const btns=fams.querySelectorAll(".fam");
+    fams.insertBefore(panel,btns[(openFam|1)+1]||null);
+  }
+  $("#tasted").innerHTML=TAG_ORDER.filter(t=>tags.has(t))
+    .map(t=>`<button type="button" data-t="${esc(t)}" aria-label="Remove ${esc(t)}">${esc(t)}</button>`).join("");
+}
+$("#fams").addEventListener("click",e=>{const b=e.target.closest(".fam");if(!b)return;
+  const i=+b.dataset.i;openFam=openFam===i?null:i;renderWheel();});
+$("#fams").addEventListener("change",e=>{const c=e.target.closest("input[data-t]");if(!c)return;
+  if(c.checked)tags.add(c.dataset.t);else tags.delete(c.dataset.t);renderWheel();});
+$("#tasted").addEventListener("click",e=>{const b=e.target.closest("button[data-t]");if(!b)return;
+  tags.delete(b.dataset.t);renderWheel();});
+
 /* draw, burn, would-smoke-again: tap to underline, tap again to clear */
 let opt={dr:"",bu:"",ag:""};
 function buildOpts(){
@@ -833,7 +878,7 @@ function startEdit(id){
   $("#f-label").value=e.l||"";$("#f-brand").value=e.b||"";setLeaf(e);
   $("#f-notes").value=e.n||"";$("#f-social").checked=!!e.s;
   setRating(typeof e.r==="number"?e.r:null);
-  Object.keys(OPTS).forEach(k=>setOpt(k,e[k]||""));
+  Object.keys(OPTS).forEach(k=>setOpt(k,e[k]||""));setTags(e.t);
   $("#f-date").value=e.d||localToday();$("#datelabel").textContent=dateLabel($("#f-date").value);
   pickedLabel=null;setEditMode(id,e.l||e.b);
   $("#details").open=true;renderSummary();renderAgain();renderUnrated();
@@ -858,7 +903,7 @@ $("#cancel").onclick=()=>{clearForm();renderUnrated();};
 function clearForm(){
   ["f-label","f-brand","f-origin","f-wrapper","f-wnote","f-binder","f-shape","f-filler","f-notes"]
     .forEach(id=>$("#"+id).value="");
-  $("#f-body").value="";$("#f-social").checked=false;setRating(null);Object.keys(OPTS).forEach(k=>setOpt(k,""));$("#ratechips-low").hidden=true;
+  $("#f-body").value="";$("#f-social").checked=false;setRating(null);Object.keys(OPTS).forEach(k=>setOpt(k,""));openFam=null;setTags([]);$("#ratechips-low").hidden=true;
   formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);
   $("#details").open=false;setEditMode(null);pickedLabel=null;hideSugg();renderSummary();renderAgain();
 }
@@ -868,7 +913,7 @@ function formFields(){
     sh:$("#f-shape").value.trim(),bd:$("#f-body").value,
     w:$("#f-wrapper").value.trim(),wn:$("#f-wnote").value.trim(),bn:$("#f-binder").value.trim(),
     fi:$("#f-filler").value.split(",").map(x=>x.trim()).filter(Boolean),
-    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,n:$("#f-notes").value.trim(),dr:opt.dr,bu:opt.bu,ag:opt.ag};
+    o:$("#f-origin").value.trim(),r:rating,s:$("#f-social").checked?1:0,n:$("#f-notes").value.trim(),dr:opt.dr,bu:opt.bu,ag:opt.ag,t:TAG_ORDER.filter(x=>tags.has(x))};
 }
 $("#save").onclick=()=>{
   const f=formFields();
@@ -1010,7 +1055,7 @@ window.addEventListener("online",()=>syncNow(true));
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden)return;
   /* a standalone app can stay open overnight; move an untouched date to today */
-  const untouched=!editingId&&!$("#f-label").value.trim()&&!$("#f-notes").value.trim()&&rating===null&&!opt.dr&&!opt.bu&&!opt.ag;
+  const untouched=!editingId&&!$("#f-label").value.trim()&&!$("#f-notes").value.trim()&&rating===null&&!opt.dr&&!opt.bu&&!opt.ag&&!tags.size;
   if(untouched&&$("#f-date").value===formDay&&formDay!==localToday()){
     formDay=localToday();$("#f-date").value=formDay;$("#datelabel").textContent=dateLabel(formDay);}
   syncNow(true);
