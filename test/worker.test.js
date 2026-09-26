@@ -431,3 +431,50 @@ describe("worker routing — authenticated", () => {
     expect(bodyNeg.cursor).toBe(0);
   });
 });
+
+describe("install files", () => {
+  const url = (p) => "https://ember.austinsego.com" + p;
+  const authed = async (p) =>
+    callWorker(new Request(url(p), { headers: { "Cf-Access-Jwt-Assertion": await mintJwt() } }));
+
+  it("refuses the manifest without an assertion", async () => {
+    const res = await SELF.fetch(url("/manifest.webmanifest"));
+    expect(res.status).toBe(403);
+  });
+
+  it("refuses an icon without an assertion", async () => {
+    const res = await SELF.fetch(url("/icon-192.png"));
+    expect(res.status).toBe(403);
+  });
+
+  it("serves the manifest with the Ember name, start_url, and both icons", async () => {
+    const res = await authed("/manifest.webmanifest");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toMatch(/application\/manifest\+json/);
+    expect(res.headers.get("X-Ember-Shell")).toBe("1");
+    const m = await res.json();
+    expect(m.name).toBe("Ember");
+    expect(m.start_url).toBe("/");
+    expect(m.display).toBe("standalone");
+    expect(m.icons.map((i) => i.src).sort()).toEqual(["/icon-192.png", "/icon-512.png"]);
+  });
+
+  for (const size of [180, 192, 512]) {
+    it(`serves icon-${size}.png as a ${size}px PNG`, async () => {
+      const res = await authed(`/icon-${size}.png`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("image/png");
+      expect(res.headers.get("X-Ember-Shell")).toBe("1");
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      expect([...bytes.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+      const width = new DataView(bytes.buffer).getUint32(16);
+      expect(width).toBe(size);
+    });
+  }
+
+  it("links the manifest and touch icon from the app shell", async () => {
+    const html = await (await authed("/")).text();
+    expect(html).toContain('<link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">');
+    expect(html).toContain('<link rel="apple-touch-icon" href="/icon-180.png">');
+  });
+});

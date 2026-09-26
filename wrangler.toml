@@ -23,6 +23,11 @@ type = "Text"
 globs = ["public/sw.js.txt"]
 fallthrough = true
 
+[[rules]]
+type = "Data"
+globs = ["**/*.png"]
+fallthrough = true
+
 [vars]
 ACCESS_TEAM_DOMAIN = "yellow-silence-afad.cloudflareaccess.com"
 ACCESS_AUD = "7a001d968edd3086d7b4c67b8611f3997111a0310e2a309397cf1c2c817270c0"
