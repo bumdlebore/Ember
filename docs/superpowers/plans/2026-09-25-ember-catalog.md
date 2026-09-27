@@ -1,10 +1,10 @@
 # Ember private catalog Implementation Plan
 
-## Handoff — 2026-09-26 evening (claude01, Opus 5.5)
+## Handoff — 2026-09-27 (claude01 → Mac, Opus 5.5)
 
-- [ ] Resume: finish Task 5 from here. Tick this in Task 5 Step 6.
+- [ ] Resume: Task 5 Step 3 onward, on the Mac. Tick this in Task 5 Step 6.
 
-**Goal:** Tasks 1–4 are done and pushed on `catalog`. The full crawl is running. What's left is Task 5: build on claude01, then Austin's Mac steps.
+**Goal:** Tasks 1–4 are done and pushed on `catalog`. The full crawl is running. The crawl and build are done. What's left is Task 5 Steps 3–6 on the Mac.
 
 **Decisions made:** see the spec. Austin approved the spec, the plan, native execution on claude01, a one-time private crawl of Neptune Cigar (terms risk accepted), one entry per blend with its sizes, and D1 storage. Execution-time rulings and the final review are in the git-ignored ledger `.superpowers/sdd/2026-09-25-ember-catalog/progress.md` on claude01. The ones that change the plan:
 - `parsePage` takes brand and blend from the last two breadcrumbs. Neptune puts a category crumb ("Flavored") before some brands.
@@ -15,15 +15,16 @@
 **Current state**
 - verified 2026-09-26: `npm test` passes (65 Worker + 19 tools tests + dry-run). All 18 UI checks pass (9 checks, light and dark). HEAD is `842530d` on `origin/catalog`.
 - verified 2026-09-26: 200-page sample had a null rate of 0.00, no missing origins, and 1 missing strength. The sample build had no unmapped strengths.
-- verified 2026-09-26: the full crawl started 2026-09-26T19:40Z as `ember-crawl.service` (about 3.3 s per page, 6,338 pages left). Expected finish is around 2026-09-27T01:30Z. Check with `systemctl is-active ember-crawl; wc -l < ~/ember-data/neptune.jsonl; tail -2 ~/ember-data/crawl.log`. If it stopped early, restart it with `sudo systemd-run --unit=ember-crawl --uid=austin --gid=austin --working-directory=/home/austin/Projects/ember -E HOME=/home/austin --property=StandardOutput=append:/home/austin/ember-data/crawl.log --property=StandardError=append:/home/austin/ember-data/crawl.log /usr/bin/node tools/catalog/crawl.mjs`. It resumes.
+- verified 2026-09-27: the crawl finished at 01:27Z with no errors: 6,544 lines in `~/ember-data/neptune.jsonl`.
+- verified 2026-09-27: `build.mjs` produced 6,544 pages (511 skipped) → 1,848 Neptune blends + 797 legacy = 2,645 blends, 897 KB raw (124 KB gzipped), version `2026-09-27T01:29:12.335Z`, no unmapped strengths. Serie V Melanio has wrapper, binder, filler, body `Med` and 13 sizes. Longest field value is 38 characters. The spec estimated 1,500–2,000 blends and about 400 KB, so the catalog is about twice as large as planned.
 - `~/ember-data/legacy-ci.json` holds the 1,238 legacy rows. `~/ember-data/neptune.smoke1.jsonl` is the parked pre-fix smoke output (5 lines) and can be removed.
 
 **Next 3 actions**
-1. After the crawl finishes: Task 5 Steps 1–2 on claude01 (`node tools/catalog/build.mjs`, then inspect Serie V Melanio).
-2. Task 5 Step 3: update this block, push, and give Austin the Mac command.
-3. Task 5 Step 4 on the Mac, each production write only after Austin says yes in chat.
+1. On the Mac: `cd /usr/local/ember && git fetch && git checkout catalog && git pull && npm ci && npm test && mkdir -p /tmp/ember-data && scp -O -i ~/Documents/Claude/Projects/Homelab/.ssh/claude01 austin@192.168.3.159:/home/austin/ember-data/catalog.json /tmp/ember-data/catalog.json && ls -l /tmp/ember-data/catalog.json` (expect about 918,000 bytes).
+2. Task 5 Step 4, each production write only after Austin says yes in chat: `npm run schema`, then `node tools/catalog/load.mjs /tmp/ember-data/catalog.json`, then verify the count (2,645) and version, then `npm run deploy`.
+3. Task 5 Steps 5–6: Austin's phone check, then finish the branch (PR, merge, tick the resume box).
 
-**Open questions:** "Colorado Maduro" is on about 16% of pages, but the spec's wrapper-note list is exact (Maduro, Oscuro, Claro, Colorado), so it becomes no note. Ask Austin whether it should count.
+**Open questions:** "Colorado Maduro" is on 689 of 6,544 pages (11%), but the spec's wrapper-note list is exact (Maduro, Oscuro, Claro, Colorado), so it becomes no note. Ask Austin whether it should count.
 
 **Credentials needed:** GitHub via `gh` on claude01 (set up). Cloudflare wrangler lives on the Mac only, so the schema, load, and deploy steps are Austin's Mac steps.
 
