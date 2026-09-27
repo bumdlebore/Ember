@@ -20,7 +20,7 @@
 - `~/ember-data/legacy-ci.json` holds the 1,238 legacy rows. `~/ember-data/neptune.smoke1.jsonl` is the parked pre-fix smoke output (5 lines) and can be removed.
 
 **Next 3 actions**
-1. On the Mac: `cd /usr/local/ember && git fetch && git checkout catalog && git pull && npm ci && npm test && mkdir -p /tmp/ember-data && scp -O -i ~/Documents/Claude/Projects/Homelab/.ssh/claude01 austin@192.168.3.159:/home/austin/ember-data/catalog.json /tmp/ember-data/catalog.json && ls -l /tmp/ember-data/catalog.json` (expect about 918,000 bytes).
+1. On the Mac: `cd /usr/local/ember && git fetch && git checkout catalog && git pull && npm ci && npm test && mkdir -p /tmp/ember-data && scp -O -i ~/Documents/Claude/Projects/Homelab/.ssh/claude01 austin@192.168.3.159:/home/austin/ember-data/catalog.json /tmp/ember-data/catalog.json && ls -l /tmp/ember-data/catalog.json` (expect 920,847 bytes).
 2. Task 5 Step 4, each production write only after Austin says yes in chat: `npm run schema`, then `node tools/catalog/load.mjs /tmp/ember-data/catalog.json`, then verify the count (2,645) and version, then `npm run deploy`.
 3. Task 5 Steps 5–6: Austin's phone check, then finish the branch (PR, merge, tick the resume box).
 
