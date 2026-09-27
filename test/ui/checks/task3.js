@@ -24,7 +24,7 @@
   inp.value = "Padron 1964"; inp.dispatchEvent(new Event("input"));
   r.retypeClears = $("#f-brand").value==="" && $("#f-wrapper").value==="" && $("#c-brand").textContent==="" && $("#c-wrapper").textContent==="";
   inp.value = "serie g maduro"; inp.dispatchEvent(new Event("input"));
-  const cat = [...document.querySelectorAll("#sugg .sg")].find(b=>/catalog/.test(b.textContent));
+  const cat = [...document.querySelectorAll("#sugg .sg")].find(b=>/Serie G Maduro/.test(b.textContent));
   cat && cat.click();
   r.catalogSplit = $("#f-brand").value==="Oliva" && $("#f-label").value==="Serie G Maduro";
   clearForm();

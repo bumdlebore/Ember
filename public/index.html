@@ -806,11 +806,14 @@ $("#sizeopts").addEventListener("click",e=>{const b=e.target.closest("button[dat
   renderSizes();renderSummary();});
 $("#moresizes").onclick=()=>{sizeAll=true;renderSizes();};
 let pickedLabel=null, sugList=[];
+/* How a catalog row reads, in the list and once picked. A blend that starts with one of his brands takes
+   that brand, even when Neptune files it under a parent company ("Casa Carrillo | EP Carrillo Pledge"
+   becomes "EP Carrillo | Pledge"); otherwise his spelling of the catalog brand wins. */
+function catView(r){const sp=splitBrand(r.l||"");
+  return sp.b?{b:sp.b,l:sp.l}:{b:r.b?canonBrand(r.b):"",l:r.l||""};}
 function applyPick(src,kind){
   let b=src.b||"", l=src.l||"";
-  /* a blend that starts with one of his brands takes that brand, even when Neptune files it under a
-     parent company ("Casa Carrillo | EP Carrillo Pledge" becomes "EP Carrillo | Pledge") */
-  if(kind==="catalog"){const sp=splitBrand(l);if(sp.b){b=sp.b;l=sp.l;}else if(b)b=canonBrand(b);}
+  if(kind==="catalog"){const v=catView(src);b=v.b;l=v.l;}
   $("#f-label").value=l;$("#f-brand").value=b;setLeaf(src);
   /* catalog rows carry a sizes array; history entries carry their chosen size string */
   $("#f-size").value=typeof src.sz==="string"?src.sz:"";
@@ -820,8 +823,9 @@ function applyPick(src,kind){
 function renderSugg(){
   const box=$("#sugg");sugList=suggest($("#f-label").value);
   if(!sugList.length){hideSugg();return;}
-  box.innerHTML=sugList.map((s,i)=>`<button type="button" class="sg" role="option" data-i="${i}">
-    <span>${esc(s.e.l||s.e.b)}</span><span class="sgm">${s.kind==="history"?esc(s.e.b||"yours"):esc(s.e.b||"catalog")}</span></button>`).join("");
+  box.innerHTML=sugList.map((s,i)=>{const v=s.kind==="catalog"?catView(s.e):{b:s.e.b,l:s.e.l};
+    return `<button type="button" class="sg" role="option" data-i="${i}">
+    <span>${esc(v.l||v.b)}</span><span class="sgm">${esc(v.b||(s.kind==="history"?"yours":"catalog"))}</span></button>`;}).join("");
   box.hidden=false;
 }
 function hideSugg(){$("#sugg").hidden=true;$("#sugg").innerHTML="";sugList=[];}

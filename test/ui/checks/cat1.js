@@ -11,7 +11,7 @@
   const sg = (re) => [...document.querySelectorAll("#sugg .sg")].find((b) => re.test(b.textContent));
   type("prequel");
   const row = sg(/Pledge Prequel/);
-  r.catalogRowShowsBrand = !!row && row.querySelector(".sgm").textContent === "E.P. Carrillo";
+  r.catalogRowShowsBrand = !!row && row.querySelector(".sgm").textContent === "EP Carrillo"; // his spelling in the list too (2026-09-27)
   row.click();
   r.pickFills = $("#f-label").value === "Pledge Prequel" && $("#f-wrapper").value === "Ecuador Habano" &&
     $("#f-body").value === "Full" && $("#f-origin").value === "Dominican Republic" && $("#f-size").value === "";
@@ -31,7 +31,11 @@
   r.sizeRowHiddenAfterSave = $("#sizes").hidden;
   // Neptune files some lines under a parent company ("Casa Carrillo | EP Carrillo Pledge").
   // When the blend starts with a brand he has logged, his brand wins and the blend loses the prefix.
-  type("test line"); sg(/EP Carrillo Test Line/).click();
+  type("test line");
+  const tl = sg(/Test Line/);
+  // the list reads the same way the pick saves: "Test Line" under "EP Carrillo", not "EP Carrillo Test Line" under "Casa Carrillo"
+  r.parentBrandListed = !!tl && tl.querySelector("span").textContent === "Test Line" && tl.querySelector(".sgm").textContent === "EP Carrillo";
+  tl.click();
   r.parentBrandSplit = $("#f-brand").value === "EP Carrillo" && $("#f-label").value === "Test Line";
   clearForm();
   type("reserva robusto"); sg(/Reserva Robusto Line/).click();
