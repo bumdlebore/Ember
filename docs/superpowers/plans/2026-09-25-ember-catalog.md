@@ -19,6 +19,13 @@
 - verified 2026-09-27: `build.mjs` produced 6,544 pages (511 skipped) → 1,848 Neptune blends + 797 legacy = 2,645 blends, 897 KB raw (124 KB gzipped), version `2026-09-27T01:29:12.335Z`, no unmapped strengths. Serie V Melanio has wrapper, binder, filler, body `Med` and 13 sizes. Longest field value is 38 characters. The spec estimated 1,500–2,000 blends and about 400 KB, so the catalog is about twice as large as planned.
 - `~/ember-data/legacy-ci.json` holds the 1,238 legacy rows. `~/ember-data/neptune.smoke1.jsonl` is the parked pre-fix smoke output (5 lines) and can be removed.
 
+- verified 2026-09-27 (Mac):
+  - `d92b2e0`: a catalog blend prefixed with a logged brand takes that brand. Neptune files 34 lines under a parent company ("Casa Carrillo › EP Carrillo Pledge").
+  - `f2a6d06`: "Colorado Maduro" counts as a wrapper note (Austin's call). The rebuild gives 2,645 blends at 901 KB, version `2026-09-27T03:05:25.935Z`.
+  - The schema is applied. The catalog is loaded: 2,645 rows in D1, version matching, and the journal still has 53 rows.
+  - Deployed version `b61807f5-7e6f-4518-9ac0-b703e2e57a26`. Access returns 302 for `/api/catalog`.
+- Remaining: the phone check (Task 5 Step 5), then the merge (Step 6).
+
 **Next 3 actions**
 1. On the Mac: `cd /usr/local/ember && git fetch && git checkout catalog && git pull && npm ci && npm test && mkdir -p /tmp/ember-data && scp -O -i ~/Documents/Claude/Projects/Homelab/.ssh/claude01 austin@192.168.3.159:/home/austin/ember-data/catalog.json /tmp/ember-data/catalog.json && ls -l /tmp/ember-data/catalog.json` (expect 920,847 bytes).
 2. Task 5 Step 4, each production write only after Austin says yes in chat: `npm run schema`, then `node tools/catalog/load.mjs /tmp/ember-data/catalog.json`, then verify the count (2,645) and version, then `npm run deploy`.
