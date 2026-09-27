@@ -2,7 +2,7 @@
 
 ## Handoff — 2026-09-27 (claude01 → Mac, Opus 5.5)
 
-- [ ] Resume: Task 5 Step 3 onward, on the Mac. Tick this in Task 5 Step 6.
+- [x] Resume: Task 5 Step 3 onward, on the Mac. Done 2026-09-27: loaded 2,645 blends, deployed `16002dda`, phone check passed, merged to main.
 
 **Goal:** Tasks 1–4 are done and pushed on `catalog`. The full crawl is running. The crawl and build are done. What's left is Task 5 Steps 3–6 on the Mac.
 
