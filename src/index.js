@@ -1,5 +1,6 @@
 import { getIdentity, JwksUnavailable } from "./access.js";
 import { listEntries, upsertEntries } from "./entries.js";
+import { getCatalog } from "./catalog.js";
 import HTML from "../public/index.html";
 import SW from "../public/sw.js.txt";
 import MANIFEST from "../public/manifest.webmanifest";
@@ -108,6 +109,11 @@ export default {
           "X-Ember-Shell": "1",
         },
       });
+    }
+
+    if (url.pathname === "/api/catalog") {
+      if (request.method !== "GET") return json({ error: "method not allowed" }, 405);
+      return json(await getCatalog(env.DB, url.searchParams.get("v") || ""));
     }
 
     if (url.pathname === "/api/entries") {

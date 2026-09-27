@@ -41,6 +41,12 @@ const server = createServer(async (req, res) => {
   const path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname));
   const file = join(root, path === "/" ? "index.html" : path);
   try {
+    if (path === "/api/catalog") {
+      const body = await readFile(join(here, "fixtures", "catalog.json"));
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(body);
+      return;
+    }
     if (!file.startsWith(root)) throw new Error("outside root");
     const body = await readFile(file);
     res.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" });
