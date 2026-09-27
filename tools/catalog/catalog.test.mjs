@@ -78,8 +78,11 @@ describe("buildCatalog", () => {
     expect(blends[0]).toMatchObject({ k: "oliva|serie v melanio", b: "Oliva", l: "Serie V Melanio", bd: "Med", wn: "", src: "np" });
     expect(blends[0].sizes.map((s) => s.n)).toEqual(["Robusto", "Torpedo", "Churchill"]);
   });
-  it("keeps Maduro, Oscuro, Claro, and Colorado as the wrapper note", () => {
+  it("keeps Maduro, Oscuro, Claro, Colorado, and Colorado Maduro as the wrapper note", () => {
     expect(buildCatalog([page({ n: "T", shape: "T", len: "6", rg: 52 }, { color: "Maduro" })], []).blends[0].wn).toBe("Maduro");
+    // Austin's call 2026-09-27: Colorado Maduro (11% of Neptune pages) is a real shade and counts.
+    expect(buildCatalog([page({ n: "T", shape: "T", len: "6", rg: 52 }, { color: "Colorado Maduro" })], []).blends[0].wn).toBe("Colorado Maduro");
+    expect(buildCatalog([page({ n: "T", shape: "T", len: "6", rg: 52 }, { color: "Natural" })], []).blends[0].wn).toBe("");
   });
   it("adds legacy rows only when Neptune lacks the blend", () => {
     const { blends, stats } = buildCatalog([page({ n: "T", shape: "T", len: "6", rg: 52 })],

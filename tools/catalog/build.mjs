@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import { BODY, LABELS, stripPrefix } from "./parse.mjs";
 
 export const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-const NOTE = /^(maduro|oscuro|claro|colorado)$/i;
+const NOTE = /^(maduro|oscuro|claro|colorado|colorado maduro)$/i;
 const G = { "¼": 0.25, "½": 0.5, "¾": 0.75 };
 const lenNum = (len) => {
   const m = String(len || "").match(/^(\d+)(?:\s+(\d+)\/(\d+)|([¼½¾]))?/);
