@@ -4,7 +4,7 @@
   const r = {};
   for (let i = 0; i < 60 && !CAT.length; i++) await new Promise((s) => setTimeout(s, 50));
   r.noREF = typeof REF === "undefined" && !document.documentElement.outerHTML.includes('const REF = [');
-  r.catalogLoaded = CAT.length === 3 && catVersion === "fixture-1";
+  r.catalogLoaded = CAT.length === 4 && catVersion === "fixture-1";
   r.cached = JSON.parse(localStorage.getItem("ember.catalog") || "{}").version === "fixture-1";
   const inp = $("#f-label");
   const type = (v) => { inp.value = v; inp.dispatchEvent(new Event("input")); };
@@ -29,6 +29,11 @@
   const saved = data[0];
   r.savedSize = data.length === n0 + 1 && saved.sh === "Robusto" && saved.sz === "5½ × 52" && saved.b === "EP Carrillo";
   r.sizeRowHiddenAfterSave = $("#sizes").hidden;
+  // Neptune files some lines under a parent company ("Casa Carrillo | EP Carrillo Pledge").
+  // When the blend starts with a brand he has logged, his brand wins and the blend loses the prefix.
+  type("test line"); sg(/EP Carrillo Test Line/).click();
+  r.parentBrandSplit = $("#f-brand").value === "EP Carrillo" && $("#f-label").value === "Test Line";
+  clearForm();
   type("reserva robusto"); sg(/Reserva Robusto Line/).click();
   r.moreSizes = document.querySelectorAll("#sizeopts button").length === 8 && !$("#moresizes").hidden;
   $("#moresizes").click();
@@ -45,7 +50,7 @@
   type("prequel"); r.offlineSuggests = !!sg(/Pledge Prequel/); clearForm();
   const realSet = Storage.prototype.setItem; Storage.prototype.setItem = () => { throw new Error("QuotaExceededError"); };
   CAT = []; catVersion = null; await refreshCatalog(true); Storage.prototype.setItem = realSet;
-  r.quotaSafe = CAT.length === 3;
+  r.quotaSafe = CAT.length === 4;
   // Review fix: an exact blend name only matches a row of the same (or no) brand.
   const mp = [{ b: "Arturo Fuente", l: "Maduro", w: "Broadleaf" }, { b: "La Gloria Cubana", l: "Maduro", w: "Ecuadorian" }, { b: "", l: "Maduro Legacy", w: "Legacy" }];
   r.matchHonorsBrand = findMatch("Maduro", "La Gloria Cubana", mp)?.w === "Ecuadorian" &&

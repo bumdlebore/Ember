@@ -808,7 +808,9 @@ $("#moresizes").onclick=()=>{sizeAll=true;renderSizes();};
 let pickedLabel=null, sugList=[];
 function applyPick(src,kind){
   let b=src.b||"", l=src.l||"";
-  if(kind==="catalog"){if(b)b=canonBrand(b);else{const sp=splitBrand(l);b=sp.b;l=sp.l;}}
+  /* a blend that starts with one of his brands takes that brand, even when Neptune files it under a
+     parent company ("Casa Carrillo | EP Carrillo Pledge" becomes "EP Carrillo | Pledge") */
+  if(kind==="catalog"){const sp=splitBrand(l);if(sp.b){b=sp.b;l=sp.l;}else if(b)b=canonBrand(b);}
   $("#f-label").value=l;$("#f-brand").value=b;setLeaf(src);
   /* catalog rows carry a sizes array; history entries carry their chosen size string */
   $("#f-size").value=typeof src.sz==="string"?src.sz:"";
